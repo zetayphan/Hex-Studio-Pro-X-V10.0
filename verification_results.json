@@ -1,0 +1,56 @@
+[
+  {
+    "test": "smoke.py",
+    "status": "PASS",
+    "seconds": 1.17,
+    "output": "PASS: native C core, 17 passes, 24-bit range, deterministic replay, extension toggle\n\n"
+  },
+  {
+    "test": "test_v42.py",
+    "status": "PASS",
+    "seconds": 1.02,
+    "output": "PASS 8\u00b3: 512 cells, 17 stage counts in bounds, deterministic\nPASS 12\u00b3: 1728 cells, 17 stage counts in bounds, deterministic\nPASS 16\u00b3: 4096 cells, 17 stage counts in bounds, deterministic\nPASS 24\u00b3: 13824 cells, 17 stage counts in bounds, deterministic\nPASS 32\u00b3: 32768 cells, 17 stage counts in bounds, deterministic\n\n"
+  },
+  {
+    "test": "test_v43.py",
+    "status": "PASS",
+    "seconds": 1.73,
+    "output": "PASS 8\u00b3: 512 cells, 17 stage counts in bounds, deterministic\nPASS 12\u00b3: 1728 cells, 17 stage counts in bounds, deterministic\nPASS 16\u00b3: 4096 cells, 17 stage counts in bounds, deterministic\nPASS 24\u00b3: 13824 cells, 17 stage counts in bounds, deterministic\nPASS 32\u00b3: 32768 cells, 17 stage counts in bounds, deterministic\nPASS: all five visualizations isolated; status indicator present; JS syntax checked if Node installed\nPASS: V4.2 native regression suite\n\n"
+  },
+  {
+    "test": "test_v51.py",
+    "status": "PASS",
+    "seconds": 0.86,
+    "output": "PASS 8\u00b3 / 512 cells deterministic, bounded, 24-bit\nPASS 12\u00b3 / 1728 cells deterministic, bounded, 24-bit\nPASS 16\u00b3 / 4096 cells deterministic, bounded, 24-bit\nPASS 24\u00b3 / 13824 cells deterministic, bounded, 24-bit\nPASS 32\u00b3 / 32768 cells deterministic, bounded, 24-bit\nPASS V5.1 native engine regression tests\n\n"
+  },
+  {
+    "test": "test_v8_release.py",
+    "status": "PASS",
+    "seconds": 0.8,
+    "output": "PASS 8\u00b3 (512 cells): conservation, bounds, deterministic execution\nPASS 12\u00b3 (1,728 cells): conservation, bounds, deterministic execution\nPASS 16\u00b3 (4,096 cells): conservation, bounds, deterministic execution\nPASS 24\u00b3 (13,824 cells): conservation, bounds, deterministic execution\nPASS 32\u00b3 (32,768 cells): conservation, bounds, deterministic execution\nPASS API snapshot shape and checksum; note: reference PDF correctness NOT verified\n\n"
+  },
+  {
+    "test": "integration.py",
+    "status": "PASS",
+    "seconds": 1.4,
+    "output": "PASS: V2 homepage, health, input, step, exact save/load, 17 stage audits\n\n"
+  },
+  {
+    "test": "pro.py",
+    "status": "PASS",
+    "seconds": 2.01,
+    "output": "PASS Pro: 17 stages, continuous processing, reset, diagnostics, validation, persistence\n\n"
+  },
+  {
+    "test": "test_visual_sync.py",
+    "status": "PASS",
+    "seconds": 0.95,
+    "output": "PASS: 9 inline scripts parse; shared snapshot and render-mode wiring detected\nNOTE: Static checks cannot prove pixel-level Canvas/WebGL synchronization\n\n"
+  },
+  {
+    "test": "test_v86_contract.py",
+    "status": "PASS",
+    "seconds": 0.67,
+    "output": "PASS: V8.6 API/visualization/hidden instrumentation static contracts\n\n"
+  }
+]

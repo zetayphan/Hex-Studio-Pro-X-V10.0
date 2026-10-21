@@ -1,0 +1,9 @@
+HEX STUDIO PRO X V8.4 — LIVE PERFORMANCE MONITOR
+
+Added a read-only dashboard panel for browser animation FPS, /api/state request round-trip latency, age of the last successful snapshot, engine tick, browser uptime, network/JS error counters and optional JS heap usage.
+
+The monitor does not modify the native engine, API responses, RGB calculations, Canvas or WebGL rendering logic. It wraps fetch only to observe /api/state requests and uses a separate requestAnimationFrame loop for browser frame cadence.
+
+Limitations: FPS is browser animation-frame cadence, NOT a separate measurement of Canvas or WebGL draw time. State request latency includes server and network time, NOT native compute time. Snapshot age is time since client received state, NOT exact engine-to-screen synchronization delay. JS heap is unavailable in many browsers. CPU and system RAM are not exposed by this browser-only panel. No extended endurance or actual-browser verification was performed.
+
+Verification: existing eight Python test suites passed in this environment. Termux and browser visual checks remain outstanding.

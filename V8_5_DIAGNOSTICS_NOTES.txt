@@ -1,0 +1,18 @@
+HEX STUDIO PRO X V8.5 — ADVANCED DIAGNOSTICS
+
+Adds per-call JS timing for the original lattice Canvas, WebGL JS draw submission,
+V6.8-style Canvas, state HTTP requests and full dashboard render passes.
+Shows median and p95 for the most recent 120 samples, repeated engine ticks,
+request errors and exportable JSON diagnostics.
+
+CAVEATS: WebGL timing is CPU-side submission only, not GPU completion.
+HTTP timing is not native C processing time. Repeated ticks do not necessarily
+indicate a fault. Browser-specific performance remains untested.
+
+Verification in build environment: 9/9 inline JS blocks passed node --check;
+8/8 existing verification scripts passed. No live browser or Termux test.
+
+To run on Termux (after extracting to Termux HOME, not Downloads):
+  cd ~/Hex_Studio_Pro_X
+  bash start.sh
+Open http://127.0.0.1:8141/ or the displayed server address.

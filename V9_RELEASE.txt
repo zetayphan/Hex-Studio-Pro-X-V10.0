@@ -1,0 +1,21 @@
+HEX STUDIO PRO X V9.0 — Connection Reliability Release
+
+Changes:
+- Dashboard version label now displays V9.0.
+- API health endpoint reports 9.0.
+- Server binds only to the requested port; no silent fallback to a different port.
+- Startup reports requested port and errors on bind failures.
+- New five-minute endurance test waits for API readiness and fails clearly if unavailable.
+- Canvas/WebGL, RGB processing, hidden diagnostics, and native engine source are retained.
+
+Termux:
+  pkg install python clang unzip nodejs -y
+  cd ~/Hex_Studio_Pro_X
+  sh start.sh
+
+Second Termux session:
+  curl -i http://127.0.0.1:8141/api/health
+  python3 tests/endurance_v9.py --seconds 300 --interval 5
+
+NOTE: A clean install is recommended; do not overwrite an active older server.
+V9 does not claim to fix every Android-specific runtime issue. Live Android/browser tests remain necessary.

@@ -1,0 +1,26 @@
+HEX STUDIO PRO X V8.2 — VISUALIZATION VERIFICATION BASELINE
+2026-10-18
+
+Changes from V8.1:
+- Added tests/test_visual_sync.py: parses each inline JavaScript script with Node.js;
+  verifies presence of the shared /api/state snapshot polling path, rendering
+  function, Canvas/WebGL mode switching, tick/checksum binding and frame scheduling.
+- Added visual-sync static check to the automated verification runner.
+- Preserved the existing C engine and dashboard rendering code without changes.
+
+Local results: 8/8 test suites PASS in this Linux environment.
+
+IMPORTANT LIMITATIONS:
+- Static checks verify wiring, not that Canvas/WebGL pixels match the same
+  engine state at every frame.
+- No browser screenshot, GPU benchmark, or mobile Termux run was performed.
+- No 4-hour or 24-hour endurance run was performed.
+- Performance optimization is not claimed; this release establishes checks
+  before future optimization.
+
+Run tests:
+  python3 tests/run_verification.py
+Node.js is required for the new JavaScript syntax check.
+
+Next: browser-driven capture of Canvas and WebGL at matching tick/checksum,
+visual inspection, frame-time sampling, and extended memory/CPU monitoring.

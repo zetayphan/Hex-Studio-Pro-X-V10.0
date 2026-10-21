@@ -1,0 +1,15 @@
+HEX STUDIO PRO X — V8.3 PERFORMANCE & STABILITY BASELINE
+
+Scope: preserve all original mathematics, Canvas V6.8-style rendering, WebGL,
+RGB network, dashboard and 17-stage pipeline without modifying engine logic.
+
+Added tests/benchmark_v83.py: isolated native step latency measurements at
+five lattice dimensions (25 steps each), plus API snapshot JSON size and
+serialization latency. Run: python3 tests/benchmark_v83.py
+Results: V8_3_PERFORMANCE_RESULTS.json (machine-specific; not an FPS claim).
+
+Existing regression suites: run python3 tests/run_verification.py.
+This release does NOT claim browser frame-rate, memory leak freedom,
+Canvas/WebGL visual fidelity, Termux compatibility, or 4h/24h endurance.
+Those require real-device measurements. No rendering or engine optimizations
+were made without verified baseline measurements.

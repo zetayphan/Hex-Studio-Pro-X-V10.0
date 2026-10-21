@@ -1,0 +1,23 @@
+HEX STUDIO PRO X V8.6 — READINESS BASELINE
+
+Preserves V8.5 mathematical engine, visualization, RGB, and hidden dashboard diagnostics.
+Adds portable shell startup and automated API endurance probe.
+
+QUICK TEST:
+  python3 tests/run_verification.py
+
+LIVE TEST (run app in another Termux session):
+  sh start.sh
+  python3 tests/endurance_v86.py --seconds 600
+  python3 tests/endurance_v86.py --seconds 14400 --interval 10
+
+Outputs saved to diagnostics/endurance_v86.json (overwritten per run).
+
+NOT YET IMPLEMENTED / VERIFIED:
+- Browser-based pixel and GPU frame verification
+- Shared monotonic state version ID across Canvas/WebGL
+- Adaptive rendering, context-loss recovery, safe snapshot validation
+- 4-hour/24-hour tests on actual Android device
+- Independent proof of all 17 mathematical algorithms
+
+V8.6 is a verification baseline, not certified production readiness.

@@ -1,0 +1,584 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hex Studio Pro X V7.1 · RGB SEPARATION · Command Center</title><style>
+:root{color-scheme:dark;--bg:#050b17;--card:#0b172b;--line:#233d60;--cyan:#40e6ef;--text:#e1efff;--muted:#8ca8c6}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 70% -20%,#17375b,transparent 55%),var(--bg);color:var(--text);font:14px system-ui,Arial}header{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#081428}h1{font-size:21px;letter-spacing:2px;margin:0}h1 b,.accent{color:var(--cyan)}.badge{font-size:12px;color:#b4f5e3;background:#103f43;border:1px solid #207d7e;border-radius:20px;padding:7px 12px}.wrap{max-width:1700px;margin:auto;padding:16px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}.metric,.card{border:1px solid var(--line);background:linear-gradient(145deg,#0d1e34,#081224);border-radius:12px;box-shadow:0 9px 35px #0003}.metric{padding:15px}.metric span{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:1px}.metric strong{display:block;font-size:23px;margin-top:7px;font-family:monospace;color:#c8faff}.grid{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:12px}.card{padding:16px;min-width:0}.card h2{font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 14px;color:#b7d9ff}.wide{grid-column:span 2}canvas{width:100%;height:270px;display:block;background:#071225;border-radius:8px;border:1px solid #1c3554}.smallcanvas{height:190px}.controls{display:flex;gap:8px;flex-wrap:wrap}button,input,select{background:#0b2743;border:1px solid #2b6389;border-radius:7px;color:#e3f6ff;padding:10px;font:inherit}button{cursor:pointer}button:hover{background:#174c70}.primary{background:#067a8d;color:white}input[type=text]{width:100%;margin-bottom:9px;font-family:monospace}input[type=range]{width:100%;padding:0}#stages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-height:370px;overflow:auto}.stage{background:#0b2139;border:1px solid #254466;padding:9px;border-radius:7px;display:flex;justify-content:space-between;gap:8px;font-size:11px}.stage em{font-style:normal;color:#52e9db;font-family:monospace}.hexgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.hexgrid div{font:12px monospace;background:#0c2942;padding:9px 3px;text-align:center;border-radius:5px;color:#7ef4f3}.hint{font-size:12px;color:var(--muted);line-height:1.5}.status{color:#8ef2c3}.error{color:#ff9eaa}#log{font:12px monospace;white-space:pre-wrap;overflow:auto;max-height:90px;color:#b2cde9}@media(max-width:1000px){.grid{grid-template-columns:1fr 1fr}.wide{grid-column:span 2}}@media(max-width:650px){.metrics{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.wide{grid-column:span 1}header{padding:15px}.hexgrid{grid-template-columns:repeat(3,1fr)}}
+nav{display:flex;gap:6px;overflow-x:auto;padding:9px 14px;background:#06172d;border-bottom:1px solid #285b88}nav button{white-space:nowrap;padding:9px 14px}.panelbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:8px 0}.panelbar select{padding:6px}.statline{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #1b3958}.statline span{color:#9cb8d7}.statline b{font-family:monospace}.extra{height:210px}.tabactive{background:#0867ba}.logbox{height:170px;max-height:170px!important}.card h2{color:#d4e9ff}.card{border-color:#265a8b}#lattice{height:340px}@media(max-width:650px){nav button{font-size:12px;padding:8px}}
+
+/* Hybrid layout: V2.3 command center density with V3.2 native interactive visualizations. */
+@media(min-width:1200px){
+.grid{grid-template-columns:minmax(255px,0.9fr) minmax(350px,1.35fr) minmax(235px,.82fr) minmax(290px,1fr);grid-template-areas:
+"control lattice lattice stats"
+"stages lattice lattice history"
+"stages slice neighbors heat"
+"analysis slice neighbors heat"
+"analysis activity activity activity";
+align-items:stretch;gap:10px}
+.grid>.card{grid-column:auto;min-width:0}
+.control-zone{grid-area:control}.lattice-zone{grid-area:lattice}.stats-zone{grid-area:stats}
+.history-zone{grid-area:history}.stages-zone{grid-area:stages}.slice-zone{grid-area:slice}
+.neighbors-zone{grid-area:neighbors}.heat-zone{grid-area:heat}
+.analysis-zone{grid-area:analysis}.activity-zone{grid-area:activity}
+#lattice{height:430px}#neighbors{height:290px!important}#slicecanvas{height:290px}
+#stages{grid-template-columns:1fr;max-height:540px}
+}
+@media(min-width:651px) and (max-width:1199px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.lattice-zone{grid-column:span 2}.activity-zone{grid-column:span 2}}
+@media(max-width:650px){.grid{grid-template-columns:minmax(0,1fr)}.grid>.card{grid-column:auto}#lattice{height:330px}#neighbors{height:250px!important}}
+.stage{width:100%;text-align:left;align-items:center;min-height:43px}.stage:focus-visible{outline:2px solid #40e6ef}#stageDetails{margin-top:12px;padding:12px;background:#0b2743;border-radius:8px;line-height:1.7}#renderstatus{font:11px monospace;color:#7debd8}
+/* V7.1: hide deprecated manual feature toggles while keeping DOM listeners intact. */
+#renderMode66, #networkOn, #nativeBonding, #vacuumBonds, #gpuParticles, #volumeCloud,
+#densityTrails, #bondGlow, #densityMotion {accent-color:#24c9c0}
+#renderMode66, .lattice-zone .panelbar {font-size:12px}
+
+/* Diagnostics collect in the background without occupying dashboard space. */
+#v84monitor,#v85diagnostics{display:none !important}
+</style></head><body><header><h1>⬡ HEX STUDIO <b>PRO</b> <span style="font-size:12px;color:#9ac3e7">V10.0</span></h1><span class="badge" id="connection">● CONNECTING</span></header><nav><button onclick="document.querySelector('main').scrollIntoView()">▣ Dashboard</button><button onclick="document.getElementById('file').scrollIntoView()">▤ File Input</button><button onclick="document.getElementById('stages').scrollIntoView()">✧ 17 Components</button><button onclick="document.getElementById('lattice').scrollIntoView()">◉ Mathematical State</button><button onclick="document.getElementById('sliceview').scrollIntoView()">▥ Visualizations</button><button onclick="document.getElementById('hexgrid').scrollIntoView()">⌘ Hexadecimal I/O</button><button onclick="document.getElementById('mathstats').scrollIntoView()">▤ Analysis</button></nav><main class="wrap"><section class="metrics"><div class="metric"><span>Engine tick</span><strong id="tick">—</strong></div><div class="metric"><span>State checksum</span><strong id="checksum">—</strong></div><div class="metric"><span>Execution</span><strong id="mode">—</strong></div><div class="metric"><span>Engine errors</span><strong id="errors">—</strong></div></section><section id="v84monitor" aria-label="Live performance monitor"><h2>◉ V8.4 · Live Performance Monitor</h2><div class="v84grid"><div class="v84tile"><small>Browser FPS (active tab)</small><strong id="v84fps">—</strong></div><div class="v84tile"><small>State request latency</small><strong id="v84latency">—</strong></div><div class="v84tile"><small>Snapshot age</small><strong id="v84age">—</strong></div><div class="v84tile"><small>Engine tick</small><strong id="v84tick">—</strong></div><div class="v84tile"><small>JS heap (if supported)</small><strong id="v84heap">Unavailable</strong></div><div class="v84tile"><small>Dashboard uptime</small><strong id="v84uptime">0s</strong></div><div class="v84tile"><small>Network / JS errors</small><strong id="v84errors">0 / 0</strong></div></div><p class="v84note" id="v84note">FPS measures browser animation frames, not individual Canvas/WebGL draw calls. Request latency includes server and network time; CPU and system RAM require native instrumentation.</p></section><section id="v85diagnostics" aria-label="Advanced rendering diagnostics"><h2>◉ V8.5 · Advanced Diagnostics</h2><div class="v84grid"><div class="v84tile"><small>Canvas lattice JS draw</small><strong id="v85canvas">Waiting</strong></div><div class="v84tile"><small>WebGL JS submission</small><strong id="v85webgl">Waiting</strong></div><div class="v84tile"><small>V6.8-style Canvas draw</small><strong id="v85classic">Waiting</strong></div><div class="v84tile"><small>State HTTP request</small><strong id="v85state">Waiting</strong></div><div class="v84tile"><small>Dashboard render pass</small><strong id="v85sync">Waiting</strong></div><div class="v84tile"><small>Repeated running ticks</small><strong id="v85stale">Waiting</strong></div><div class="v84tile"><small>Diagnostic request errors</small><strong id="v85errors">0</strong></div></div><button type="button" id="v85export">Export diagnostic JSON</button><p class="v84note">Measured durations are browser JavaScript wall times. WebGL GPU completion and native C step duration are not directly measured. A repeated tick may be normal when polling faster than the engine advances. These are diagnostic indicators, not proof of synchronization.</p></section><div class="grid"><section class="card wide lattice-zone"><h2>◈ 3D State Lattice · Per-key RGB lattice</h2><p class="hint">Each cell is colored from its own 24-bit key: #RRGGBB. Density controls size and glow, not hue. Native RGB separation updates the keys and all views.</p><div id="renderMode66" role="group" aria-label="Lattice rendering layers"><label><input id="originalLattice66" type="checkbox" checked> Original lattice (Canvas)</label><label><input id="webglLattice66" type="checkbox" checked> WebGL particles</label><span class="hint" id="renderModeStatus66" role="status">Both rendering layers active</span></div><p class="hint" id="separationStatus">RGB separation: waiting for engine state…</p><div class="model-tabs77" role="tablist" aria-label="3D visualization model"><button type="button" id="tabCanvas77" role="tab" aria-selected="true">◈ Canvas 3D State Model</button><button type="button" id="tabWebgl77" role="tab" aria-selected="false">◉ WebGL Fluid Model</button></div><section id="classicModel76" class="classic-inline77">
+<h2>◈ Original 3D State Model · Canvas (non-WebGL)</h2>
+<p class="hint">Native RGB transformations, nodal transfer, density emphasis, and fluid-flow cues update from the same engine snapshot as WebGL. Drag to rotate.</p>
+<canvas id="classicCanvas76" aria-label="Non-WebGL 3D state model" style="height:350px;touch-action:none"></canvas>
+<div class="controls" style="margin-top:10px"><button type="button" id="classicLeft76">↶ Rotate</button><button type="button" id="classicRight76">↷ Rotate</button><button type="button" id="classicZoomIn76">＋ Zoom</button><button type="button" id="classicZoomOut76">－ Zoom</button><button type="button" id="classicReset76">Reset view</button></div>
+<p id="classicStatus76" class="hint" role="status">Waiting for native lattice data…</p>
+</section><canvas id="lattice" style="touch-action:none;cursor:grab" aria-label="Interactive 3D lattice"></canvas><div class="panelbar" id="fluidControls72"><strong>WebGL RGB Fluid</strong><label><input type="checkbox" id="fluidEnabled72" checked> Fluid motion</label><label>Flow speed <input type="range" id="fluidSpeed72" min="0" max="100" value="45" style="width:100px"></label><label>Swirl <input type="range" id="fluidSwirl72" min="0" max="100" value="55" style="width:100px"></label><label>Node transfer <input type="range" id="nodeTransfer73" min="0" max="100" value="65" style="width:100px"></label><label>Flow lines <select id="flowLines73"><option value="450">Battery saver</option><option value="900" selected>Balanced</option><option value="1800">Detailed</option></select></label><span id="fluidStatus72" class="hint">Nodal fluid flow follows native RGB state; lattice remains unchanged</span></div><div class="panelbar"><button id="resetview">Reset 3D View</button><label><input type="checkbox" id="gpuParticles" checked> GPU particles (WebGL)</label><label>Particle detail <select id="gpuDetail"><option value="0">Soft</option><option value="1" selected>Detailed</option><option value="2">Ultra</option></select></label><label>Particle glow <input type="range" id="gpuGlow" min="0" max="100" value="85" style="width:90px"></label><label>Particle size <input type="range" id="gpuSize" min="40" max="200" value="125" style="width:90px"></label><label>RGB brightness <input type="range" id="gpuRGB" min="50" max="200" value="155" style="width:90px"></label><label><input type="checkbox" id="densityTrails" checked> Density trails</label><label>Trail length <input type="range" id="trailLength" min="1" max="8" value="4" style="width:85px"></label><label><input type="checkbox" id="volumeCloud"> Volumetric clouds</label><label>Cloud threshold <input type="range" id="cloudThreshold" min="10" max="95" value="65" style="width:95px"></label><label>Cloud opacity <input type="range" id="cloudOpacity" min="0" max="100" value="55" style="width:95px"></label><label>Density emphasis <input id="density" type="range" min="0" max="100" value="70" style="width:110px" aria-label="Density emphasis"></label><label>Color palette <select id="colorPalette"><option value="rgbheat" selected>Per-key RGB · native hexadecimal</option></select></label><label>Color vibrancy <input id="colorVibrancy" type="range" min="0" max="100" value="95" style="width:100px"></label><label>Render quality <select id="renderQuality"><option value="650" selected>Battery saver</option><option value="1800">Balanced</option><option value="3500">Detailed</option></select></label><label>Density contrast <input id="densityContrast" type="range" min="0" max="100" value="65" style="width:105px" aria-label="Density contrast"></label><label><input id="densityMotion" type="checkbox" checked> Smooth transitions</label><label><input type="checkbox" id="vacuumBonds" checked> Vacuum bonding</label><label>Bond strength <input id="bondStrength" type="range" min="0" max="100" value="80" style="width:95px"></label><label>Bond threshold <input id="bondThreshold" type="range" min="0" max="100" value="28" style="width:95px"></label><label><input id="bondGlow" type="checkbox" checked> Bond glow</label><label>Cluster attraction <input id="clusterAttraction" type="range" min="0" max="100" value="75" style="width:95px"></label><label>RGB bond saturation <input id="rgbBonding" type="range" min="0" max="100" value="90" style="width:95px"></label><span id="bondStatus" class="hint">Vacuum bonding ready</span><div class="panelbar" style="border:1px solid #287d9b;padding:9px;border-radius:9px"><label><input type="checkbox" id="nativeBonding"> Native state-changing bonding</label><label>Mix strength <input id="nativeBondStrength" type="range" min="0" max="100" value="35" style="width:90px"></label><label>Similarity threshold <input id="nativeBondThreshold" type="range" min="0" max="100" value="45" style="width:90px"></label><button type="button" id="applyBondNow">Apply bond to hexadecimal state</button><span id="nativeBondStatus" class="hint">Visual-only until enabled</span></div><div class="panelbar"><label>Cell index <input type="number" id="editCellIndex" min="0" value="0" style="width:78px"></label><label>24-bit hex <input id="editCellHex" value="FF00AA" maxlength="6" style="width:95px"></label><button type="button" id="applyCellEdit">Write cell → hexadecimal output</button></div><div class="panelbar" style="border:1px solid #397c92;border-radius:9px;padding:10px"><strong>Interactive cell bonding</strong><span class="hint">Tap two nodes in the 3D lattice (or enter indices), then bond or break the pair.</span><label>Cell A <input type="number" id="pairA" min="0" value="0" style="width:78px"></label><label>Cell B <input type="number" id="pairB" min="0" value="1" style="width:78px"></label><label>RGB mix <input type="range" id="pairStrength" min="0" max="100" value="45" style="width:95px"></label><button type="button" id="bondPair">Bond selected pair</button><button type="button" id="breakPair">Break / restore pair</button><span id="pairStatus" class="hint" role="status">Select two cells</span></div><div class="panelbar" style="border:1px solid #397c92;border-radius:9px;padding:10px"><strong>Persistent RGB bond network</strong><span class="hint">Bonds persist between ticks, adapt in strength, and alter native hexadecimal values.</span><label><input type="checkbox" id="networkOn" checked> Network active</label><button type="button" id="networkAdd">Keep selected pair bonded</button><button type="button" id="networkRemove">Remove selected bond</button><button type="button" id="networkClear">Clear network</button><span id="networkStatus" class="hint" role="status">Network initializing…</span></div><button type="button" id="verifyPanels">Verify panels</button><span id="renderstatus" class="hint">Rendering…</span><span id="panelHealth" class="hint" role="status" aria-live="polite">Waiting for visualizations…</span><span id="sync661" class="hint" role="status">Awaiting native state…</span><span id="cellinspect" class="hint">Tap a cell to inspect it</span></div><p class="hint">Drag to rotate · pinch or scroll to zoom · tap a cell to inspect its native hexadecimal value.</p></section><section class="card control-zone"><h2>◉ Execution Control</h2><label>Native lattice size <select id="nativeDimension"><option value="8">8³ · 512 cells</option><option value="12">12³ · 1,728 cells</option><option value="16">16³ · 4,096 cells</option><option value="24">24³ · 13,824 cells</option><option value="32">32³ · 32,768 cells</option></select></label><button id="applyDimension">Reinitialize lattice</button><p class="hint">Changing dimensions resets the current experiment. Save first if needed.</p><div class="controls"><button class="primary" onclick="post('/api/control',{running:true})">▶ Run</button><button onclick="post('/api/control',{running:false})">Ⅱ Pause</button><button onclick="post('/api/step',{})">↷ Step</button><button onclick="post('/api/reset',{})">⟲ Reset</button><button onclick="post('/api/save',{})">⇩ Save</button><button onclick="post('/api/load',{})">⇧ Load</button></div><p class="hint">Tick interval: <span id="speedlabel">250</span> ms</p><input type="range" id="speed" min="50" max="2000" step="50" value="250"><p class="hint"><label><input type="checkbox" id="extension" checked> Underlying principle extension</label></p><details style="margin-top:14px"><summary>V10 · Native Hex Transform</summary><p class="hint">Pause the engine, then transform selected native cells. Changes update all state-driven views.</p><label>Operation <select id="v10op"><option>xor</option><option>add</option><option>and</option><option>or</option><option value="rotate_left">rotate_left</option></select></label><label>Start cell <input id="v10start" type="number" min="0" value="0" style="width:75px"></label><label>Count <input id="v10count" type="number" min="1" max="4096" value="1" style="width:75px"></label><label>Operand <input id="v10operand" value="0xFF" style="width:90px"></label><button type="button" onclick="post('/api/transform',{operation:document.getElementById('v10op').value,start:Number(document.getElementById('v10start').value),count:Number(document.getElementById('v10count').value),operand:document.getElementById('v10operand').value})">Apply native transform</button></details><h2>Hexadecimal Input</h2><input type="text" id="hexinput" value="071EB8 DB10BC EB1078 0B1DBC" aria-label="Hexadecimal blocks"><button onclick="post('/api/input',{hex:document.getElementById('hexinput').value})">Apply Hex Input</button><h2 style="margin-top:20px">File Input</h2><input type="file" id="file"><button onclick="upload()">Load File into Engine</button><p class="hint" id="fileinfo">No file loaded</p></section><section class="card heat-zone"><h2>▦ Hexadecimal State Heatmap</h2><div class="panelbar"><label>Color source <select id="heatSource"><option value="density" selected>Per-key native RGB</option></select></label></div><canvas class="smallcanvas" id="heatmap"></canvas><p class="hint">Each heatmap cell shows its native 24-bit RGB key. Bonding updates the key and all views on the next state refresh.</p><div class="hexgrid" id="hexgrid"></div></section><section class="card" style="grid-column:1/-1"><h2>◈ Density Cluster Analysis · native 3D cells</h2><div class="panelbar"><label>Cluster threshold <input type="range" id="clusterThreshold" min="10" max="95" value="70" style="width:130px"></label><span id="clusterThresholdValue" class="hint">70%</span></div><div id="clusterStats" class="hint" role="status">Waiting for mathematical state…</div><p class="hint">Clusters are 6-connected neighboring native cells above the selected smoothed-density threshold. Cloud rendering is a visual interpolation; no engine values are changed.</p></section><section class="card history-zone"><h2>⌁ Evolution History</h2><canvas class="smallcanvas" id="evolution"></canvas><p class="hint">Actual recorded engine checksum across recent ticks.</p><h2>Runtime Diagnostics</h2><div id="diagnostics" class="hint">Waiting for engine…</div></section><section class="card stages-zone"><h2>▤ 17 Stage Execution Monitor</h2><div id="stages"></div><div id="stageDetails" class="hint" aria-live="polite">Select a stage for its execution diagnostics.</div><p class="hint">Stage checksums are reported by the native C pipeline. Structural stages may not mutate cells.</p></section><section class="card slice-zone" id="sliceview"><h2>▦ State Slice View (native 2D)</h2><p class="hint">Each cell uses its own 24-bit hexadecimal RGB key.</p><div class="panelbar"><label>Grid <select id="dimension"><option value="4">4 × 4 × 4</option><option value="6">6 × 6 × 6</option><option value="8" selected>8 × 8 × 8</option></select></label><label>Z Slice <input type="range" id="slice" min="0" max="7" value="4" style="width:100px"></label><span id="slicevalue">4 / 7</span></div><canvas id="slicecanvas" class="extra"></canvas><p class="hint">Slice samples the active native lattice; select the full dimension to inspect native cells.</p></section><section class="card neighbors-zone"><h2>◎ Neighbor Connections</h2><canvas id="neighbors" class="extra" style="touch-action:none;cursor:grab;height:250px" aria-label="Interactive three dimensional neighbor graph"></canvas><div class="panelbar"><button id="resetneighbors">Reset Neighbor View</button><label>Connections <select id="neighborMode"><option value="local">Selected cell neighborhood</option><option value="all">Full lattice</option><option value="legacy24">24-cell legacy mapping</option></select></label></div><label id="legacySourceWrap" class="hint">24-cell source <select id="legacySource"><option value="first">First 24 native cells</option><option value="sample">24 evenly spaced native cells</option></select></label><p id="neighborinspect" class="hint">Drag to rotate · pinch to zoom · tap a node to inspect</p><p class="hint">3D neighbor modes use native lattice cells. Legacy mode maps 24 selected native cell values into a 3D 4 × 3 × 2 network; it does not recreate an unverified V2.1 topology.</p></section><section class="card stats-zone" id="mathstats"><h2>▤ Mathematical State Information</h2><div id="mathinfo"></div><h2 style="margin-top:20px">Mathematical Metrics</h2><div id="mathmetrics"></div></section><section class="card analysis-zone"><h2>⌁ Evolution Analysis</h2><div class="panelbar"><button onclick="graphMode='checksum';last&&renderGraph(last.history)">Checksum</button><button onclick="graphMode='mean';last&&renderGraph(last.history)">Mean</button><button onclick="graphMode='change';last&&renderGraph(last.history)">Change</button></div><p class="hint">History records come directly from the running native engine.</p><h2>Processing Progress</h2><div id="progressInfo" class="hint"></div></section><section class="card wide activity-zone"><h2>System Activity</h2><div id="log">Connecting to local mathematical engine…</div></section></div></main><script id="v85-diagnostics-script">
+(function(){'use strict';
+const stats={canvas:[],webgl:[],classic:[],state:[],sync:[],errors:0};
+const max=120;const add=(key,value)=>{if(!Number.isFinite(value))return;const a=stats[key];a.push(value);if(a.length>max)a.shift();};
+window.hexV85={add,stats};
+const median=a=>{if(!a.length)return null;const b=[...a].sort((x,y)=>x-y);return b[Math.floor(b.length/2)]};
+const p95=a=>{if(!a.length)return null;const b=[...a].sort((x,y)=>x-y);return b[Math.min(b.length-1,Math.ceil(.95*b.length)-1)]};
+const format=k=>{const a=stats[k];return a.length?median(a).toFixed(2)+' ms median · '+p95(a).toFixed(2)+' ms p95':'Waiting for samples';};
+let previousTick=null,previousAt=0,observed=0,stale=0;
+const original=window.fetch.bind(window);
+window.fetch=async function(input,init){const path=typeof input==='string'?input:(input&&input.url)||'';if(!path.includes('/api/state'))return original(input,init);const t=performance.now();try{const response=await original(input,init);add('state',performance.now()-t);if(response.ok){const body=await response.clone().json();if(Number.isFinite(body.tick)){const now=performance.now();observed++;if(body.tick===previousTick&&body.running)stale++;previousTick=body.tick;previousAt=now;}}return response;}catch(e){stats.errors++;throw e;}};
+window.hexV85.snapshot=()=>({captured_at:new Date().toISOString(),measurements_ms:Object.fromEntries(['canvas','webgl','classic','state','sync'].map(k=>[k,{samples:stats[k].length,median:median(stats[k]),p95:p95(stats[k])}])),observed,stale,errors:stats.errors,notes:'WebGL time measures JS submission, not GPU execution. Sync is time from state fetch completion to final render return; not hardware display latency.'});
+const out=id=>document.getElementById(id);
+setInterval(()=>{if(!out('v85diagnostics'))return;for(const k of ['canvas','webgl','classic','state','sync'])out('v85'+k).textContent=format(k);out('v85stale').textContent=observed?stale+' / '+observed+' running-state snapshots':'Waiting for snapshots';out('v85errors').textContent=String(stats.errors);},1000);
+out('v85export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(window.hexV85.snapshot(),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='hex-studio-v85-diagnostics.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)});
+})();
+</script><script id="v84-monitor-script">(function(){'use strict';const t0=performance.now(),v={frames:0,prev:t0,latest:0,tick:null,latency:null,netErrors:0,jsErrors:0};const el=id=>document.getElementById(id);const originalFetch=window.fetch.bind(window);window.fetch=async function(input,init){const path=typeof input==='string'?input:(input&&input.url)||'';if(!path.includes('/api/state'))return originalFetch(input,init);const started=performance.now();try{const response=await originalFetch(input,init);v.latency=performance.now()-started;if(!response.ok){v.netErrors++;return response;}try{const payload=await response.clone().json();if(typeof payload.tick==='number'){v.tick=payload.tick;v.latest=performance.now();}}catch(_){v.netErrors++;}return response;}catch(e){v.netErrors++;throw e;}};addEventListener('error',()=>v.jsErrors++);addEventListener('unhandledrejection',()=>v.jsErrors++);function frame(now){v.frames++;if(now-v.prev>=1000){if(el('v84fps'))el('v84fps').textContent=document.hidden?'Paused':(v.frames*1000/(now-v.prev)).toFixed(1);v.frames=0;v.prev=now;}requestAnimationFrame(frame);}requestAnimationFrame(frame);setInterval(()=>{if(!el('v84monitor'))return;const now=performance.now();el('v84latency').textContent=v.latency===null?'—':v.latency.toFixed(1)+' ms';el('v84age').textContent=v.latest?((now-v.latest)/1000).toFixed(1)+' s':'No snapshot';el('v84tick').textContent=v.tick===null?'—':String(v.tick);el('v84uptime').textContent=Math.floor((now-t0)/1000)+' s';el('v84errors').textContent=v.netErrors+' / '+v.jsErrors;const mem=performance.memory;el('v84heap').textContent=mem&&typeof mem.usedJSHeapSize==='number'?(mem.usedJSHeapSize/1048576).toFixed(1)+' MiB':'Unavailable';},1000);})();</script>
+<script>
+const $=id=>document.getElementById(id);let last=null,graphMode="checksum";let yaw=-0.55,pitch=0.48,zoom=1,projected=[];function canvas(id){
+ const c=$(id);if(!c)throw Error('Missing canvas: '+id);
+ const r=c.getBoundingClientRect();
+ const w=Math.max(1,r.width||c.clientWidth||320),h=Math.max(1,r.height||270);
+ // Limit device-pixel allocation to protect mobile browsers from context loss.
+ const d=Math.min(window.devicePixelRatio||1,1.5,Math.sqrt(1800000/(w*h)));
+ const pw=Math.max(1,Math.round(w*d)),ph=Math.max(1,Math.round(h*d));
+ if(c.width!==pw)c.width=pw;if(c.height!==ph)c.height=ph;
+ const x=c.getContext('2d',{alpha:false});if(!x)throw Error('Canvas 2D unavailable: '+id);
+ x.setTransform(d,0,0,d,0,0);x.clearRect(0,0,w,h);
+ x.fillStyle='#071225';x.fillRect(0,0,w,h);
+ return [x,w,h];
+}function line(ctx,a,b,color,width=1){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.stroke()}function project3(gx,gy,gz,w,h,angle,tilt,magnify){let X=gx-3.5,Y=gy-3.5,Z=gz-3.5,cy=Math.cos(angle),sy=Math.sin(angle),cp=Math.cos(tilt),sp=Math.sin(tilt),rx=X*cy-Z*sy,rz=X*sy+Z*cy,ry=Y*cp-rz*sp,depth=Y*sp+rz*cp,scale=Math.min(w,h)*.105*magnify;return {px:w/2+rx*scale,py:h/2+ry*scale,depth}}
+let densityCacheValues=null,densityCache=null;function spatialDensity(vals){if(vals===densityCacheValues&&densityCache)return densityCache;let n=Math.round(Math.cbrt(vals.length)),out=new Float32Array(vals.length);for(let i=0;i<vals.length;i++){let gx=i%n,gy=Math.floor(i/n)%n,gz=Math.floor(i/(n*n)),sum=0,weight=0;for(let dz=-1;dz<=1;dz++)for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){let xx=gx+dx,yy=gy+dy,zz=gz+dz;if(xx<0||xx>=n||yy<0||yy>=n||zz<0||zz>=n)continue;let wt=(dx===0&&dy===0&&dz===0)?3:1;sum+=wt*(vals[xx+n*yy+n*n*zz]||0)/16777215;weight+=wt}out[i]=sum/weight}densityCacheValues=vals;densityCache=out;return out}
+// Direct 24-bit color mapping: R=(hex>>16)&255, G=(hex>>8)&255, B=hex&255.
+// Density only affects glow/size, never changes the hexadecimal RGB mapping.
+function directRGB(value,alpha=1){
+ const v=(Number(value)||0)>>>0;
+ // Display-only contrast and saturation; native 24-bit values stay untouched.
+ const channels=[(v>>>16)&255,(v>>>8)&255,v&255];
+ const mean=(channels[0]+channels[1]+channels[2])/3;
+ const vibrancy=Number(document.getElementById('colorVibrancy')?.value||95)/100;
+ const saturation=1+0.48*vibrancy;
+ const contrast=1+0.22*vibrancy;
+ const result=channels.map(c=>Math.max(0,Math.min(255,Math.round(((mean+(c-mean)*saturation)/255-.5)*contrast*255+127.5))));
+ return `rgba(${result[0]},${result[1]},${result[2]},${Math.max(0,Math.min(1,alpha))})`;
+}
+// V6.6.4: one consistent density-based RGB scale for all visual layers.
+// Only the three anchor colors BLUE, GREEN and RED are used; intermediate
+// shades are linear blends. This is a visualization, not a state mutation.
+function rgbHeat(t){
+ t=Math.max(0,Math.min(1,Number(t)||0));
+ const a=t<=.5?[0,0,255]:[0,255,0],b=t<=.5?[0,255,0]:[255,0,0];
+ const f=t<=.5?t*2:(t-.5)*2;
+ return a.map((v,i)=>Math.round(v+(b[i]-v)*f));
+}
+function dynamicColor(t,alpha=1){
+ const [r,g,b]=rgbHeat(t);
+ return `rgba(${r},${g},${b},${Math.max(0,Math.min(1,alpha))})`;
+}
+function stateColor(index,energy,alpha=1){const values=last&&last.values;return directRGB(values&&index>=0&&index<values.length?values[index]:0,alpha)}
+function drawSphere(ctx,p,r,energy,alpha=1){
+  if(!Number.isFinite(p.px)||!Number.isFinite(p.py))return;
+  const radius=Math.max(1.5,Math.min(16,r*1.13));
+  const hue=0;
+  ctx.beginPath();ctx.arc(p.px,p.py,radius,0,Math.PI*2);
+  ctx.fillStyle=stateColor(p.i,energy,Math.min(1,alpha*1.18));ctx.fill();
+  if(radius>2){ctx.beginPath();ctx.arc(p.px-radius*.22,p.py-radius*.25,radius*.32,0,Math.PI*2);ctx.fillStyle=`rgba(240,250,255,${.18*alpha})`;ctx.fill()}
+}
+let latticePrevious=null,latticePreviousTick=-1,latticeBlendStarted=0;
+let energyCacheVals=null,energyCacheKey="",energyCache=null;function latticeEnergy(vals){const key=$("densityContrast").value+":"+$("density").value;if(vals===energyCacheVals&&key===energyCacheKey&&energyCache)return energyCache;const raw=spatialDensity(vals),contrast=+$('densityContrast').value/100,emphasis=+$('density').value/100;let lo=1,hi=0;for(let d of raw){lo=Math.min(lo,d);hi=Math.max(hi,d)}let out=new Float32Array(vals.length);for(let i=0;i<vals.length;i++){let v=vals[i]/16777215,d=raw[i],normalized=(d-lo)/Math.max(.000001,hi-lo);let boosted=Math.pow(normalized,2.4-2.15*contrast);out[i]=Math.max(0,Math.min(1,(1-emphasis)*v+emphasis*((1-contrast)*d+contrast*boosted)))}energyCacheVals=vals;energyCacheKey=key;energyCache=out;return out}
+// V6.4: depth-aware RGB particles with halo, bright core and optional fine ring.
+// This is a visual shader only: native hexadecimal cell values remain unchanged.
+// Bounded semi-Lagrangian-style velocity field for GPU particle motion.
+// Visualization-only: native RGB separation and hexadecimal feedback remain authoritative.
+const fluid72={n:8,velocity:new Float32Array(8*8*8*3),positions:new Map(),tick:-1,clock:0};
+// V7.5: GPU motion is derived from the same native RGB state snapshot as the lattice.
+// Spatial RGB gradients determine local transport direction; no independent swirl oscillator.
+function fluidAdvance72(tick){
+ if(tick===fluid72.tick)return;
+ const values=last&&last.values;if(!values||!values.length)return;
+ const dim=Math.round(Math.cbrt(values.length)),n=fluid72.n;
+ const next=new Float32Array(fluid72.velocity.length);
+ const intensity=(i)=>{const v=values[i]>>>0;return (((v>>>16)&255)+((v>>>8)&255)+(v&255))/765};
+ const sample=(x,y,z)=>{x=Math.max(0,Math.min(dim-1,Math.round(x*(dim-1)/(n-1))));y=Math.max(0,Math.min(dim-1,Math.round(y*(dim-1)/(n-1))));z=Math.max(0,Math.min(dim-1,Math.round(z*(dim-1)/(n-1))));return intensity(x+dim*(y+dim*z))};
+ for(let z=0;z<n;z++)for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+  const k=3*(x+n*(y+n*z));
+  const gradient=[sample(Math.min(n-1,x+1),y,z)-sample(Math.max(0,x-1),y,z),sample(x,Math.min(n-1,y+1),z)-sample(x,Math.max(0,y-1),z),sample(x,y,Math.min(n-1,z+1))-sample(x,y,Math.max(0,z-1))];
+  for(let a=0;a<3;a++)next[k+a]=Math.max(-1,Math.min(1,.55*fluid72.velocity[k+a]+.45*gradient[a]));
+ }
+ fluid72.velocity=next;fluid72.tick=tick;
+}
+function fluidOffset72(p,dim){
+ const n=fluid72.n,idx=p.i,x=idx%dim,y=Math.floor(idx/dim)%dim,z=Math.floor(idx/(dim*dim));
+ const gx=Math.min(n-1,Math.round(x*(n-1)/(dim-1))),gy=Math.min(n-1,Math.round(y*(n-1)/(dim-1))),gz=Math.min(n-1,Math.round(z*(n-1)/(dim-1)));
+ const k=3*(gx+n*(gy+n*gz)),v=fluid72.velocity, speed=Number($('fluidSpeed72').value)/100;
+ let q=fluid72.positions.get(idx)||[0,0,0];
+ for(let a=0;a<3;a++)q[a]=Math.max(-.8,Math.min(.8,q[a]*.92+v[k+a]*speed*.12));
+ fluid72.positions.set(idx,q);return q;
+}
+let gpuCanvas=null,gpuGL=null,gpuProgram=null,gpuBuffer=null,gpuUniform=null,gpuParams={};
+let flowProgram73=null,flowBuffer73=null,flowParams73={};
+function initializeGPU(){
+ if(gpuGL)return true;
+ const base=$('lattice'),parent=base.parentElement;
+ if(getComputedStyle(parent).position==='static')parent.style.position='relative';
+ gpuCanvas=document.createElement('canvas');gpuCanvas.setAttribute('aria-hidden','true');
+ Object.assign(gpuCanvas.style,{position:'absolute',pointerEvents:'none',zIndex:'2'});parent.appendChild(gpuCanvas);
+ try{
+  const gl=gpuCanvas.getContext('webgl',{alpha:true,antialias:true,preserveDrawingBuffer:false});
+  if(!gl)throw Error('WebGL unsupported');
+  const compile=(type,source)=>{const sh=gl.createShader(type);gl.shaderSource(sh,source);gl.compileShader(sh);if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(sh));return sh};
+  const vs=compile(gl.VERTEX_SHADER,`attribute vec2 position;attribute vec3 rgb;attribute vec2 state;uniform float scale;uniform float sizeFactor;uniform float detail;varying vec3 color;varying float energy;varying float depth;
+  void main(){gl_Position=vec4(position,0.,1.);color=rgb;energy=state.x;depth=state.y;float radius=(5.+14.*pow(energy,1.25))*mix(.75,1.25,depth)*sizeFactor;gl_PointSize=min(72.,radius*scale);}`);
+  const fs=compile(gl.FRAGMENT_SHADER,`precision mediump float;varying vec3 color;varying float energy;varying float depth;uniform float glow;uniform float detail;uniform float brightness;
+  void main(){vec2 q=gl_PointCoord-.5;float r=length(q)*2.;if(r>1.)discard;
+  float halo=pow(max(0.,1.-r),2.)*(.24+.65*glow);
+  float shell=exp(-pow((r-.55)*12.,2.))*.20*step(.5,detail);
+  float ring=exp(-pow((r-.72)*30.,2.))*.18*step(1.5,detail);
+  float core=exp(-pow(r*5.5,2.));
+  float glint=exp(-dot((q-vec2(-.12,-.14))*15.,(q-vec2(-.12,-.14))*15.))*.6*step(.5,detail);
+  vec3 vivid=clamp((color-vec3(.5))*1.22+vec3(.5),0.,1.);
+  vec3 c=clamp(vivid*brightness,0.,1.8);
+  vec3 outColor=c*(.55+halo+shell+ring)+vec3(1.)*(core*.9+glint*.4);
+  float alpha=clamp(halo+shell+ring+core*.95+glint*.5,0.,1.)*(.55+.45*depth);
+  gl_FragColor=vec4(outColor,alpha);}`);
+  gpuProgram=gl.createProgram();gl.attachShader(gpuProgram,vs);gl.attachShader(gpuProgram,fs);gl.linkProgram(gpuProgram);
+  if(!gl.getProgramParameter(gpuProgram,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(gpuProgram));
+  gpuBuffer=gl.createBuffer();gpuGL=gl;
+  // GPU lines: RGB node-to-node transfer, animated by native tick.
+  const flowVS=compile(gl.VERTEX_SHADER,`attribute vec2 xy;attribute vec3 rgb;attribute float strength;varying vec3 vColor;varying float vStrength;void main(){gl_Position=vec4(xy,0.,1.);vColor=rgb;vStrength=strength;}`);
+  const flowFS=compile(gl.FRAGMENT_SHADER,`precision mediump float;varying vec3 vColor;varying float vStrength;void main(){gl_FragColor=vec4(vColor,clamp(vStrength,0.,.85));}`);
+  flowProgram73=gl.createProgram();gl.attachShader(flowProgram73,flowVS);gl.attachShader(flowProgram73,flowFS);gl.linkProgram(flowProgram73);
+  if(!gl.getProgramParameter(flowProgram73,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(flowProgram73));
+  flowBuffer73=gl.createBuffer();
+  for(const name of ['scale','sizeFactor','detail','glow','brightness'])gpuParams[name]=gl.getUniformLocation(gpuProgram,name);
+  return true;
+ }catch(err){if(gpuCanvas)gpuCanvas.remove();gpuCanvas=null;gpuGL=null;$('renderstatus').textContent='GPU unavailable; Canvas fallback active';return false}
+}
+function drawNodalFlow73(gl,pts,w,h,values,dim){
+ const cap=Number($('flowLines73').value),transfer=Number($('nodeTransfer73').value)/100;
+ if(!transfer||!flowProgram73)return 0;
+ const lookup=new Map(pts.map(p=>[p.i,p]));const stride=Math.max(1,Math.round(dim/Math.cbrt(Math.max(1,pts.length))));
+ const segments=[],tick=last?last.tick:0;let count=0;
+ for(const p of pts){if(count>=cap)break;
+  const x=p.i%dim,y=Math.floor(p.i/dim)%dim,z=Math.floor(p.i/(dim*dim));
+  for(const j of [x+stride<dim?p.i+stride:-1,y+stride<dim?p.i+stride*dim:-1,z+stride<dim?p.i+stride*dim*dim:-1]){
+   if(count>=cap)break;const q=lookup.get(j);if(!q)continue;
+   const a=(values[p.i]||0)>>>0,b=(values[q.i]||0)>>>0;
+   const diff=(Math.abs((a>>>16)-(b>>>16))+Math.abs(((a>>>8)&255)-((b>>>8)&255))+Math.abs((a&255)-(b&255)))/765;
+   const strength=transfer*(.25+.75*diff);if(strength<.04)continue;
+   const v=fluid72.velocity,n=fluid72.n,gx=Math.round(x*(n-1)/(dim-1)),gy=Math.round(y*(n-1)/(dim-1)),gz=Math.round(z*(n-1)/(dim-1)),k=3*(gx+n*(gy+n*gz));
+   // A directed transfer pulse travels along each link with velocity-dependent phase.
+   const vel=v[k]+v[k+1]+v[k+2],phase=((tick*.045+vel*.3+p.i*.037)%1+1)%1;
+   const start=Math.max(0,phase-.22),end=Math.min(1,phase+.22);
+   const rgb=[(((a>>>16)&255)+((b>>>16)&255))/510,(((a>>>8)&255)+((b>>>8)&255))/510,((a&255)+(b&255))/510];
+   for(const t of [start,end]){const px=p.px+(q.px-p.px)*t,py=p.py+(q.py-p.py)*t;segments.push(2*px/w-1,1-2*py/h,...rgb,strength*.8);}
+   count++;
+  }
+ }
+ if(!count)return 0;
+ gl.useProgram(flowProgram73);gl.bindBuffer(gl.ARRAY_BUFFER,flowBuffer73);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(segments),gl.DYNAMIC_DRAW);
+ for(const [name,size,offset] of [['xy',2,0],['rgb',3,2],['strength',1,5]]){const loc=gl.getAttribLocation(flowProgram73,name);if(loc>=0){gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,size,gl.FLOAT,false,24,offset*4)}}
+ gl.blendFunc(gl.SRC_ALPHA,gl.ONE);gl.lineWidth(1);gl.drawArrays(gl.LINES,0,count*2);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+ return count;
+}
+function drawGPUParticles(pts,w,h){const t=performance.now();try{return drawGPUParticlesMeasured(pts,w,h)}finally{window.hexV85?.add("webgl",performance.now()-t)}}function drawGPUParticlesMeasured(pts,w,h){
+ if(false){if(gpuCanvas)gpuCanvas.style.display='none';return}
+ if(!initializeGPU())return;
+ try{
+  const base=$('lattice'),gl=gpuGL;gpuCanvas.style.display='block';
+  gpuCanvas.style.left=base.offsetLeft+'px';gpuCanvas.style.top=base.offsetTop+'px';gpuCanvas.style.width=base.clientWidth+'px';gpuCanvas.style.height=base.clientHeight+'px';
+  if(gpuCanvas.width!==base.width||gpuCanvas.height!==base.height){gpuCanvas.width=base.width;gpuCanvas.height=base.height}
+  gl.viewport(0,0,gpuCanvas.width,gpuCanvas.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.useProgram(gpuProgram);
+  // 7 floats per particle: screen xy, native hexadecimal RGB, density, relative depth.
+  const data=new Float32Array(pts.length*7);let lo=Infinity,hi=-Infinity;
+  for(const p of pts){lo=Math.min(lo,p.depth);hi=Math.max(hi,p.depth)}
+  const values=last&&last.values?last.values:[];
+  const fluidOn=true;
+  if(fluidOn&&last){fluidAdvance72(last.tick);}
+  else $('fluidStatus72').textContent='Fluid paused · original GPU particle positions';
+  const dim=Math.max(2,Math.round(Math.cbrt(values.length)));
+  pts.forEach((p,i)=>{const v=(values[p.i]||0)>>>0,k=i*7;
+   let px=p.px,py=p.py;
+   if(fluidOn){const offset=fluidOffset72(p,dim);const a=project3(3.5,3.5,3.5,w,h,yaw,pitch,zoom);
+    const b=project3(3.5+offset[0],3.5+offset[1],3.5+offset[2],w,h,yaw,pitch,zoom);
+    px+=b.px-a.px;py+=b.py-a.py;}
+   data[k]=2*px/w-1;data[k+1]=1-2*py/h;
+   const value=(values[p.i]||0)>>>0;data[k+2]=((value>>>16)&255)/255;data[k+3]=((value>>>8)&255)/255;data[k+4]=(value&255)/255;
+   data[k+5]=p.energy;data[k+6]=.2+.8*(p.depth-lo)/Math.max(.0001,hi-lo);
+  });
+  gl.bindBuffer(gl.ARRAY_BUFFER,gpuBuffer);gl.bufferData(gl.ARRAY_BUFFER,data,gl.DYNAMIC_DRAW);
+  for(const [name,count,offset] of [['position',2,0],['rgb',3,2],['state',2,5]]){
+   const loc=gl.getAttribLocation(gpuProgram,name);if(loc<0)continue;
+   gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,count,gl.FLOAT,false,28,offset*4);
+  }
+  gl.uniform1f(gpuParams.scale,Math.min(window.devicePixelRatio||1,2));
+  gl.uniform1f(gpuParams.sizeFactor,+$('gpuSize').value/100);
+  gl.uniform1f(gpuParams.detail,+$('gpuDetail').value);
+  gl.uniform1f(gpuParams.glow,+$('gpuGlow').value/100);
+  gl.uniform1f(gpuParams.brightness,+$('gpuRGB').value/100);
+  gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+  gl.drawArrays(gl.POINTS,0,pts.length);
+  const connections=drawNodalFlow73(gl,pts,w,h,values,dim);
+  $('fluidStatus72').textContent=fluidOn?`Nodal flow active · ${connections} GPU transfer links · tick ${last?.tick??0}`:'Fluid paused · original particle positions';
+ }catch(err){$('renderstatus').textContent='GPU draw failed; Canvas lattice remains available';$('gpuParticles').checked=false;if(gpuCanvas)gpuCanvas.style.display='none'}
+}
+let densityTrailFrames=[];let lastTrailTick=-1;
+function drawDensityTrails(ctx,pts,tick){
+ if(!$('densityTrails').checked){densityTrailFrames=[];return}
+ if(tick!==lastTrailTick){lastTrailTick=tick;densityTrailFrames.push(pts.filter(p=>p.energy>.55).sort((a,b)=>b.energy-a.energy).slice(0,180).map(p=>[p.i,p.energy]));densityTrailFrames=densityTrailFrames.slice(-Number($('trailLength').value))}
+ const lookup=new Map(pts.map(p=>[p.i,p]));
+ densityTrailFrames.forEach((frame,f)=>{let opacity=.04+.18*(f+1)/densityTrailFrames.length;for(const [id,e] of frame){const p=lookup.get(id);if(!p)continue;ctx.beginPath();ctx.arc(p.px,p.py,2+6*e,0,Math.PI*2);ctx.fillStyle=dynamicColor(e,opacity);ctx.fill()}})
+}
+let clusterMemoKey=null,clusterMemo=null;
+function computeClusters(vals){
+ const threshold=Number($('clusterThreshold').value)/100;
+ if(clusterMemoKey&&clusterMemoKey.vals===vals&&clusterMemoKey.threshold===threshold)return clusterMemo;
+ const field=latticeEnergy(vals),n=Math.round(Math.cbrt(vals.length)),seen=new Uint8Array(vals.length),clusters=[];
+ for(let i=0;i<field.length;i++){
+  if(seen[i]||field[i]<threshold)continue;
+  const stack=[i];seen[i]=1;let size=0,sum=0,max=0;
+  while(stack.length){const j=stack.pop(),x=j%n,y=Math.floor(j/n)%n,z=Math.floor(j/(n*n)),e=field[j];size++;sum+=e;max=Math.max(max,e);
+   for(const k of [x>0?j-1:-1,x<n-1?j+1:-1,y>0?j-n:-1,y<n-1?j+n:-1,z>0?j-n*n:-1,z<n-1?j+n*n:-1])if(k>=0&&!seen[k]&&field[k]>=threshold){seen[k]=1;stack.push(k)}
+  }clusters.push({size,mean:sum/size,peak:max});
+ }
+ clusters.sort((a,b)=>b.size-a.size);clusterMemoKey={vals,threshold};clusterMemo=clusters;return clusters;
+}
+function renderClusterStats(vals){
+ const cs=computeClusters(vals),active=cs.reduce((a,c)=>a+c.size,0);
+ $('clusterThresholdValue').textContent=$('clusterThreshold').value+'%';
+ $('clusterStats').textContent=`${cs.length.toLocaleString()} clusters · ${active.toLocaleString()} / ${vals.length.toLocaleString()} cells above threshold · largest cluster ${cs[0]?.size||0} cells · peak density ${(cs[0]?.peak||0).toFixed(3)}`;
+}
+function drawVolumeClouds(ctx,pts){
+ if(!$('volumeCloud').checked)return;
+ const threshold=Number($('cloudThreshold').value)/100,opacity=Number($('cloudOpacity').value)/100;
+ // Bounded to displayed nodes, with layered radial gradients approximating a volumetric field.
+ const active=pts.filter(p=>p.energy>=threshold).sort((a,b)=>b.energy-a.energy).slice(0,72);
+ ctx.save();ctx.globalCompositeOperation='screen';
+ for(const p of active){const radius=(8+24*p.energy)*Math.max(.65,zoom**.3),alpha=opacity*(p.energy-threshold)/Math.max(.05,1-threshold)*.32;
+  const grad=ctx.createRadialGradient(p.px,p.py,0,p.px,p.py,radius);
+  grad.addColorStop(0,dynamicColor(p.energy,Math.min(.45,alpha)));grad.addColorStop(.5,dynamicColor(p.energy,Math.min(.18,alpha*.35)));grad.addColorStop(1,dynamicColor(p.energy,0));
+  ctx.fillStyle=grad;ctx.fillRect(p.px-radius,p.py-radius,2*radius,2*radius);
+ }ctx.restore();
+}
+// V6 visual-only vacuum bonding: bond weights derive from neighboring state density and similarity.
+// Does not alter native cell values or claim physical vacuum forces.
+// Shared visual-only displacement: local positive density gradient pulls displayed nodes
+// toward high-density neighbors. Native positions and hexadecimal values never change.
+function bondPosition(i,n,field,amount){
+ const gx=i%n,gy=Math.floor(i/n)%n,gz=Math.floor(i/(n*n));
+ let dx=0,dy=0,dz=0,total=0;
+ for(const [ox,oy,oz] of [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]]){
+  const xx=gx+ox,yy=gy+oy,zz=gz+oz;
+  if(xx<0||yy<0||zz<0||xx>=n||yy>=n||zz>=n)continue;
+  const j=xx+n*yy+n*n*zz;
+  const weight=Math.max(0,field[j]-field[i])**1.4;
+  dx+=ox*weight;dy+=oy*weight;dz+=oz*weight;total+=weight;
+ }
+ const pull=amount*(0.25+0.75*field[i]);
+ return [(gx+pull*dx/(total+0.00001))*7/(n-1),
+         (gy+pull*dy/(total+0.00001))*7/(n-1),
+         (gz+pull*dz/(total+0.00001))*7/(n-1)];
+}
+function rgbBondColor(a,b,alpha=1){
+ const v1=(last?.values?.[a.i]||0)>>>0,v2=(last?.values?.[b.i]||0)>>>0;
+ const sat=Number($('rgbBonding').value)/100;
+ const r=(((v1>>16)&255)+((v2>>16)&255))/2;
+ const g=(((v1>>8)&255)+((v2>>8)&255))/2;
+ const bl=((v1&255)+(v2&255))/2;
+ const mix=c=>Math.min(255,Math.round(c*sat+145*(1-sat)));
+ return `rgba(${mix(r)},${mix(g)},${mix(bl)},${alpha})`;
+}
+function drawVacuumBonds(ctx,pts,lookup,n,stride){
+ if(!$('vacuumBonds').checked){$('bondStatus').textContent='Vacuum bonding off';return}
+ const strength=Number($('bondStrength').value)/100,threshold=Number($('bondThreshold').value)/100;
+ const glow=$('bondGlow').checked,edges=[];
+ for(const p of pts){
+  const ix=p.i%n,iy=Math.floor(p.i/n)%n,iz=Math.floor(p.i/(n*n));
+  const near=[ix+stride<n?p.i+stride:-1,iy+stride<n?p.i+stride*n:-1,iz+stride<n?p.i+stride*n*n:-1];
+  for(const j of near){const q=lookup.get(j);if(!q)continue;
+   const similarity=1-Math.abs(p.energy-q.energy),density=(p.energy+q.energy)/2;
+   const bond=(.58*density+.42*similarity)*strength;
+   if(bond>=threshold)edges.push([p,q,bond]);
+  }
+ }
+ ctx.save();ctx.globalCompositeOperation='screen';
+ for(const [p,q,b] of edges){
+  if(glow&&b>.45){ctx.beginPath();ctx.moveTo(p.px,p.py);ctx.lineTo(q.px,q.py);ctx.strokeStyle=rgbBondColor(p,q,.10+.25*b);ctx.lineWidth=3+4*b;ctx.stroke()}
+  ctx.beginPath();ctx.moveTo(p.px,p.py);ctx.lineTo(q.px,q.py);
+  ctx.strokeStyle=rgbBondColor(p,q,.30+.65*b);ctx.lineWidth=.45+2.4*b;ctx.stroke();
+ }
+ ctx.restore();$('bondStatus').textContent=edges.length.toLocaleString()+' active bonds · visual model';
+}
+function renderLattice(vals){const t=performance.now();try{return renderLatticeMeasured(vals)}finally{window.hexV85?.add("canvas",performance.now()-t)}}function renderLatticeMeasured(vals){let [x,w,h]=canvas('lattice'),n=Math.round(Math.cbrt(vals.length)),energy=latticeEnergy(vals),pts=[],stride=Math.max(1,Math.ceil(n/Math.cbrt(+$('renderQuality').value)));const canBlend=$('densityMotion').checked&&last&&last.running&&latticePrevious&&latticePrevious.length===energy.length;const blend=canBlend?Math.min(1,(performance.now()-latticeBlendStarted)/850):1;for(let gz=0;gz<n;gz+=stride)for(let gy=0;gy<n;gy+=stride)for(let gx=0;gx<n;gx+=stride){let i=gx+n*gy+n*n*gz,e=canBlend?latticePrevious[i]*(1-blend)+energy[i]*blend:energy[i],p=project3(gx*7/(n-1),gy*7/(n-1),gz*7/(n-1),w,h,yaw,pitch,zoom);pts.push({...p,i,energy:e})}projected=pts;$('renderstatus').textContent=`${pts.length.toLocaleString()} / ${vals.length.toLocaleString()} native cells · density contrast ${$('densityContrast').value}%`;let lookup=new Map(pts.map(p=>[p.i,p]));for(let p of pts){let gx=p.i%n,gy=Math.floor(p.i/n)%n,gz=Math.floor(p.i/(n*n));for(let j of [gx+stride<n?p.i+stride:-1,gy+stride<n?p.i+stride*n:-1,gz+stride<n?p.i+stride*n*n:-1]){let b=lookup.get(j);if(!b)continue;let e=(p.energy+b.energy)/2;line(x,[p.px,p.py],[b.px,b.py],$('vacuumBonds').checked?rgbBondColor(p,b,.08+.6*e):stateColor(p.i,e,.06+.65*e),.4+1.6*e)}}drawVacuumBonds(x,pts,lookup,n,stride);drawDensityTrails(x,pts,last?last.tick:0);drawVolumeClouds(x,pts);pts.slice().sort((a,b)=>a.depth-b.depth).forEach(p=>{const e=p.energy;if(e>.58){x.beginPath();x.arc(p.px,p.py,(2+8*e)*Math.max(.7,zoom**.3),0,Math.PI*2);x.fillStyle=stateColor(p.i,e,.04+.20*e);x.fill()}drawSphere(x,p,(1.1+5.8*Math.pow(e,1.5))*Math.max(.65,zoom**.4),e,.35+.65*e)});drawGPUParticles(pts,w,h)}
+// Reliable Canvas 2D heatmap; avoids WebGL context conflicts on Android.
+function renderHeat(vals){
+ const el=$('heatmap');
+ if(!el || !vals || !vals.length)return;
+ const rect=el.getBoundingClientRect();
+ const d=Math.min(window.devicePixelRatio||1,1.5);
+ const width=Math.max(280,Math.round((rect.width||320)*d));
+ const height=Math.max(180,Math.round((rect.height||220)*d));
+ if(el.width!==width)el.width=width;
+ if(el.height!==height)el.height=height;
+ const ctx=el.getContext('2d');
+ if(!ctx)throw Error('Canvas 2D unavailable');
+ ctx.clearRect(0,0,width,height);
+ const cols=Math.ceil(Math.sqrt(vals.length));
+ const rows=Math.ceil(vals.length/cols);
+ const cw=width/cols,ch=height/rows;
+ const field=latticeEnergy(vals);
+ for(let i=0;i<vals.length;i++){
+  const t=Math.max(0,Math.min(1,field?field[i]:(Number(vals[i])/16777215||0)));
+  ctx.fillStyle=stateColor(i,t);
+  ctx.fillRect(Math.floor((i%cols)*cw),Math.floor(Math.floor(i/cols)*ch),Math.ceil(cw)+1,Math.ceil(ch)+1);
+ }
+}
+function renderGraph(hist){
+ let [x,w,h]=canvas('evolution');x.strokeStyle='#23415e';
+ for(let i=1;i<5;i++)line(x,[0,h*i/5],[w,h*i/5],'#24415b');
+ if(!hist||!hist.length)return;
+ const series=hist.map((p,i)=>graphMode==='mean'?Number(p.mean):graphMode==='change'?Math.abs(Number(p.value)-Number(hist[Math.max(0,i-1)].value)):Number(p.value));
+ const lo=Math.min(...series),hi=Math.max(...series),span=Math.max(1,hi-lo);
+ x.beginPath();series.forEach((v,i)=>{let xx=10+i*(w-20)/Math.max(1,series.length-1),yy=h-12-(v-lo)/span*(h-24);i?x.lineTo(xx,yy):x.moveTo(xx,yy)});
+ x.strokeStyle='#4de7ee';x.lineWidth=2;x.stroke();
+ x.fillStyle='#b5dff2';x.font='11px monospace';x.fillText(`tick ${hist[0].tick}–${hist[hist.length-1].tick} · ${graphMode}`,10,16);
+}
+let lastRenderedCount=0;function render(s){const v85Start=performance.now();if(!s||!Array.isArray(s.values)||!s.values.length)throw Error('Engine returned no state cells');if(last&&s.tick!==last.tick&&last.values.length===s.values.length){latticePrevious=latticeEnergy(last.values);latticeBlendStarted=performance.now()}else if(last&&last.values.length!==s.values.length){latticePrevious=null}last=s;try{renderClusterStats(s.values)}catch(err){$('clusterStats').textContent='Cluster analysis unavailable: '+err.message};$('connection').textContent='● '+s.version+' · CONNECTED';if(document.activeElement!==$('nativeDimension'))$('nativeDimension').value=String(s.dimension);if(s.values.length!==lastRenderedCount){lastRenderedCount=s.values.length;selectedCell=Math.min(selectedCell,s.values.length-1);let select=$('dimension');select.innerHTML=[4,6,8,12,16,24,32].filter(n=>n<=s.dimension).map(n=>`<option value="${n}" ${n===s.dimension?'selected':''}>${n} × ${n} × ${n}</option>`).join('');$('slice').max=s.dimension-1;$('slice').value=Math.floor(s.dimension/2)}$('connection').className='badge';$('tick').textContent=s.tick.toLocaleString();$('checksum').textContent=s.checksum;$('mode').textContent=s.running?'RUNNING':'PAUSED';$('errors').textContent=s.diagnostics.errors_total;$('speedlabel').textContent=s.interval_ms;$('fileinfo').textContent=s.file?`${s.file.name} · ${s.file.size} bytes`:'No file loaded';$('diagnostics').textContent=`Uptime: ${s.diagnostics.uptime_seconds}s · Steps: ${s.diagnostics.steps_total} · Engine: ${s.diagnostics.engine} · Visualization: ${s.diagnostics.visualization}`;$('hexgrid').innerHTML=s.hex.slice(0,64).map((v,i)=>`<div title="Cell ${i}">${v}</div>`).join('');$('stages').innerHTML=s.stages.map((a,i)=>`<button type="button" class="stage" data-stage="${i}" aria-label="Inspect stage ${i+1}"><span>${String(i+1).padStart(2,'0')} ${escapeHTML(a.name)}</span><em>${a.checksum} · Δ${a.changed_cells??0}</em></button>`).join('');safeDraw('lattice',()=>renderLattice(s.values));safeDraw('heatmap',()=>renderHeat(s.values));safeDraw('evolution',()=>renderGraph(s.history));safeDraw('slicecanvas',()=>renderSlice(s.values));safeDraw('neighbors',()=>renderNeighbors(s.values));safeDraw('mathstats',()=>renderStats(s));const sync=$('sync661');if(sync){sync.textContent=`SYNC · native tick ${s.tick} · HEX ${s.checksum} · 5 panels refreshed`;sync.style.color='#8ef2c3'}window.hexV85?.add('sync',performance.now()-v85Start)}let panelErrors={};function safeDraw(id,fn){try{fn();delete panelErrors[id]}catch(err){panelErrors[id]=String(err&&err.message||err);let el=$(id);if(el&&el.tagName==='CANVAS'){let c=el.getContext('2d');if(c){c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,el.width,el.height);c.fillStyle='#ffb3ba';c.font='15px sans-serif';c.fillText('Visualization error: '+id,12,28)}}}let indicator=$('panelHealth');if(indicator){let failed=Object.keys(panelErrors);indicator.textContent=failed.length?'Panel errors: '+failed.map(k=>k+' ('+panelErrors[k]+')').join(' | '):'All visualization panels rendered · '+new Date().toLocaleTimeString();indicator.style.color=failed.length?'#ffb3ba':'#8ef2c3'}}function renderSlice(vals){let density=latticeEnergy(vals);let [x,w,h]=canvas('slicecanvas'),n=+$('dimension').value,z=+$('slice').value,side=Math.min(w-24,h-22),ox=(w-side)/2,oy=(h-side)/2;$('slicevalue').textContent=z+' / '+(n-1);for(let yy=0;yy<n;yy++)for(let xx=0;xx<n;xx++){let native=Math.round(Math.cbrt(vals.length)),index=Math.floor(xx*native/n)+Math.floor(yy*native/n)*native+Math.floor(z*native/n)*native*native,v=density[index];x.fillStyle=stateColor(index,v);x.fillRect(ox+xx*side/n,oy+yy*side/n,side/n-2,side/n-2)}}let neighborYaw=-.55,neighborPitch=.45,neighborZoom=1,neighborProjected=[],selectedCell=292;
+function renderLegacy24(vals){let [x,w,h]=canvas('neighbors');let sample=$('legacySource').value==='sample',indices=Array.from({length:24},(_,i)=>sample?Math.round(i*(vals.length-1)/23):i),points=[],edges=[];for(let k=0;k<24;k++){let gx=k%4,gy=Math.floor(k/4)%3,gz=Math.floor(k/12),p=project3(gx*7/3,gy*7/2,gz*7,w,h,neighborYaw,neighborPitch,neighborZoom),v=vals[indices[k]]/16777215;points.push({...p,i:indices[k],legacyIndex:k,v});for(let j of [gx<3?k+1:-1,gy<2?k+4:-1,gz<1?k+12:-1])if(j>=0)edges.push([k,j])}for(let [i,j] of edges){let a=points[i],b=points[j],e=(a.v+b.v)/2;line(x,[a.px,a.py],[b.px,b.py],`hsla(${220-190*e},100%,${45+35*e}%,${.3+.65*e})`,.7+2*e)}for(let p of points.slice().sort((a,b)=>a.depth-b.depth)){drawSphere(x,p,3+5*p.v,p.v,1);x.fillStyle='#dcefff';x.font='10px monospace';x.fillText(String(p.legacyIndex+1),p.px+6,p.py-6)}neighborProjected=points;$('neighborinspect').textContent=`24 mapped native cells · ${sample?'evenly spaced':'first 24'} · tap a node to inspect · drag to rotate`}
+function renderNeighbors(vals){if($('neighborMode').value==='legacy24')return renderLegacy24(vals);let [x,w,h]=canvas('neighbors'),n=Math.round(Math.cbrt(vals.length)),all=$('neighborMode').value==='all',cx=selectedCell%n,cy=Math.floor(selectedCell/n)%n,cz=Math.floor(selectedCell/(n*n)),points=[],edges=[],stride=all?Math.max(1,Math.ceil(n/9)):1;let indices=[];if(all){for(let z=0;z<n;z+=stride)for(let y=0;y<n;y+=stride)for(let xx=0;xx<n;xx+=stride)indices.push(xx+n*y+n*n*z)}else{for(let z=Math.max(0,cz-2);z<=Math.min(n-1,cz+2);z++)for(let y=Math.max(0,cy-2);y<=Math.min(n-1,cy+2);y++)for(let xx=Math.max(0,cx-2);xx<=Math.min(n-1,cx+2);xx++)indices.push(xx+n*y+n*n*z)}let included=new Set(indices),dens=latticeEnergy(vals);for(let i of indices){let gx=i%n,gy=Math.floor(i/n)%n,gz=Math.floor(i/(n*n)),p=project3(gx*7/(n-1),gy*7/(n-1),gz*7/(n-1),w,h,neighborYaw,neighborPitch,neighborZoom);points.push({...p,i,v:dens[i]});for(let j of [gx+stride<n?i+stride:-1,gy+stride<n?i+stride*n:-1,gz+stride<n?i+stride*n*n:-1])if(included.has(j))edges.push([i,j])}let lookup=new Map(points.map(p=>[p.i,p]));for(let [i,j] of edges){let a=lookup.get(i),b=lookup.get(j),e=(a.v+b.v)/2;line(x,[a.px,a.py],[b.px,b.py],$('vacuumBonds').checked?rgbBondColor(a,b,.2+.65*e):`hsla(${220-175*e},100%,${50+25*e}%,${.2+.55*e})`,.5+1.3*e)}points.sort((a,b)=>a.depth-b.depth);for(let p of points)drawSphere(x,p,p.i===selectedCell?6:2+3.5*p.v,p.v,p.i===selectedCell?1:.85);neighborProjected=points}
+function inspectStage(i){if(!last||!last.stages[i])return;let a=last.stages[i];$('stageDetails').textContent=`Stage ${i+1}: ${a.name} | Status: ${a.status} | Type: ${a.kind} | Checksum: ${a.checksum} | Changed cells: ${a.changed_cells??'unavailable'} | Tick: ${last.tick}. These counts describe engine reports, not independent proof of mathematical correctness.`;}function renderStats(s){let a=s.values.map(v=>v/16777215),mean=a.reduce((x,y)=>x+y,0)/a.length,variance=a.reduce((x,y)=>x+(y-mean)**2,0)/a.length,diversity=new Set(s.values).size/s.values.length;let stat=(k,v)=>`<div class="statline"><span>${k}</span><b>${v}</b></div>`;$('mathinfo').innerHTML=stat('Iteration',s.tick)+stat('State checksum',s.checksum)+stat('Native cells',s.values.length)+stat('Stage records',s.stages.length)+stat('Engine',escapeHTML(s.diagnostics.engine))+stat('Mode',s.running?'Running':'Paused');$('mathmetrics').innerHTML=stat('Mean state',mean.toFixed(4))+stat('Standard deviation',Math.sqrt(variance).toFixed(4))+stat('Minimum',a.reduce((m,v)=>Math.min(m,v),1).toFixed(4))+stat('Maximum',a.reduce((m,v)=>Math.max(m,v),0).toFixed(4))+stat('Distinct value ratio',diversity.toFixed(4))+stat('Shannon entropy (bits)',entropyBits(s.values).toFixed(3))+stat('Entropy / max', (entropyBits(s.values)/Math.log2(s.values.length)).toFixed(4));$('progressInfo').textContent=`${s.stages.length} / 17 stage records · ${s.diagnostics.steps_total} steps completed · ${s.diagnostics.errors_total} errors`; }function escapeHTML(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}async function poll(){try{let r=await fetch('/api/state',{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);render(await r.json())}catch(e){$('panelHealth').textContent='Dashboard error: '+e.message;$('connection').textContent='● DISCONNECTED';$('connection').className='badge error';$('log').textContent=e.message}}async function post(path,body){try{let r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),v=await r.json();if(!r.ok)throw Error(v.error||'Request failed');$('log').textContent=`${new Date().toLocaleTimeString()} ${path} completed`;if(v.values)render(v);else await poll()}catch(e){$('log').textContent='ERROR: '+e.message}}async function upload(){let f=$('file').files[0];if(!f)return $('log').textContent='Select a file first';if(f.size>1048576)return $('log').textContent='File must be at most 1 MiB';let a=new Uint8Array(await f.arrayBuffer());await post('/api/file',{name:f.name,bytes:Array.from(a,b=>b.toString(16).padStart(2,'0')).join('')})}$('dimension').addEventListener('change',e=>{$('slice').max=+e.target.value-1;$('slice').value=Math.min(+$('slice').value,+$('slice').max);last&&render(last)});$('heatSource').addEventListener('change',()=>last&&safeDraw('heatmap',()=>renderHeat(last.values)));$('slice').addEventListener('input',()=>last&&renderSlice(last.values));$('speed').addEventListener('change',e=>post('/api/control',{interval_ms:+e.target.value}));$('extension').addEventListener('change',e=>post('/api/control',{extension:e.target.checked}));function entropyBits(vals){let counts=new Map();for(let v of vals)counts.set(v,(counts.get(v)||0)+1);let h=0;for(let n of counts.values()){let q=n/vals.length;h-=q*Math.log2(q)}return h}
+const lattice=$('lattice');let pointers=new Map(),drag=null,pinch=null;
+lattice.addEventListener('pointerdown',e=>{lattice.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===1)drag={x:e.clientX,y:e.clientY,moved:false};else drag=null});
+lattice.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;let prev=pointers.get(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===1){let dx=e.clientX-prev.x,dy=e.clientY-prev.y;yaw+=dx*.009;pitch=Math.max(-1.5,Math.min(1.5,pitch+dy*.009));if(drag&&(Math.abs(e.clientX-drag.x)+Math.abs(e.clientY-drag.y)>6))drag.moved=true}else if(pointers.size===2){let pair=[...pointers.values()],dist=Math.hypot(pair[0].x-pair[1].x,pair[0].y-pair[1].y);if(pinch)zoom=Math.max(.4,Math.min(3,zoom*dist/pinch));pinch=dist}if(last)renderLattice(last.values)});
+lattice.addEventListener('pointerup',e=>{if(drag&&!drag.moved&&last){let r=lattice.getBoundingClientRect(),xx=e.clientX-r.left,yy=e.clientY-r.top,nearest=projected.reduce((best,p)=>{let d=(p.px-xx)**2+(p.py-yy)**2;return d<best.d?{d,p}:best},{d:Infinity,p:null});if(nearest.d<225){let p=nearest.p;$('cellinspect').textContent=`Cell ${p.i} (${p.i%last.dimension},${Math.floor(p.i/last.dimension)%last.dimension},${Math.floor(p.i/(last.dimension*last.dimension))}): ${last.hex[p.i]}`}}pointers.delete(e.pointerId);drag=null;pinch=null});
+lattice.addEventListener('pointercancel',e=>{pointers.delete(e.pointerId);drag=null;pinch=null});
+lattice.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.4,Math.min(3,zoom*(e.deltaY>0?.9:1.1)));if(last)renderLattice(last.values)},{passive:false});
+for(const id of ['colorPalette','colorVibrancy'])$(id).addEventListener('input',()=>{if(last)render(last)});$('clusterThreshold').addEventListener('input',()=>last&&renderClusterStats(last.values));$('applyDimension').addEventListener('click',()=>post('/api/dimension',{dimension:+$('nativeDimension').value}));$('density').addEventListener('input',()=>last&&renderLattice(last.values));$('densityContrast').addEventListener('input',()=>last&&renderLattice(last.values));for(const id of ['volumeCloud','cloudThreshold','cloudOpacity','gpuParticles','gpuDetail','gpuGlow','gpuSize','gpuRGB','densityTrails','trailLength'])$(id).addEventListener('input',()=>last&&renderLattice(last.values));for(const id of ['nodeTransfer73','flowLines73'])$(id).addEventListener('input',()=>last&&renderLattice(last.values));$('densityMotion').addEventListener('change',()=>last&&renderLattice(last.values));$('renderQuality').addEventListener('change',()=>last&&renderLattice(last.values));$('stages').addEventListener('click',e=>{let b=e.target.closest('[data-stage]');if(b)inspectStage(+b.dataset.stage)});$('neighborMode').addEventListener('change',()=>{ $('legacySourceWrap').style.display=$('neighborMode').value==='legacy24'?'inline':'none';last&&renderNeighbors(last.values)});$('legacySource').addEventListener('change',()=>last&&renderNeighbors(last.values));$('legacySourceWrap').style.display='none';$('resetneighbors').addEventListener('click',()=>{neighborYaw=-.55;neighborPitch=.45;neighborZoom=1;if(last)renderNeighbors(last.values)});
+const neighborCanvas=$('neighbors');let npointers=new Map(),nstart=null,npinch=null;neighborCanvas.addEventListener('pointerdown',e=>{neighborCanvas.setPointerCapture(e.pointerId);npointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(npointers.size===1)nstart={x:e.clientX,y:e.clientY,moved:false};else nstart=null});neighborCanvas.addEventListener('pointermove',e=>{if(!npointers.has(e.pointerId))return;let prev=npointers.get(e.pointerId);npointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(npointers.size===1){neighborYaw+=(e.clientX-prev.x)*.009;neighborPitch=Math.max(-1.5,Math.min(1.5,neighborPitch+(e.clientY-prev.y)*.009));if(nstart&&Math.hypot(e.clientX-nstart.x,e.clientY-nstart.y)>6)nstart.moved=true}else if(npointers.size===2){let pp=[...npointers.values()],dist=Math.hypot(pp[0].x-pp[1].x,pp[0].y-pp[1].y);if(npinch)neighborZoom=Math.max(.4,Math.min(3,neighborZoom*dist/npinch));npinch=dist}if(last)renderNeighbors(last.values)});neighborCanvas.addEventListener('pointerup',e=>{if(nstart&&!nstart.moved&&last){let r=neighborCanvas.getBoundingClientRect(),xx=e.clientX-r.left,yy=e.clientY-r.top,best=neighborProjected.reduce((a,p)=>{let d=(p.px-xx)**2+(p.py-yy)**2;return d<a.d?{d,p}:a},{d:Infinity,p:null});if(best.d<225){selectedCell=best.p.i;$('neighborinspect').textContent=`Cell ${selectedCell}: ${last.hex[selectedCell]} · 3D (${selectedCell%last.dimension},${Math.floor(selectedCell/last.dimension)%last.dimension},${Math.floor(selectedCell/(last.dimension*last.dimension))})`;renderNeighbors(last.values)}}npointers.delete(e.pointerId);nstart=null;npinch=null});neighborCanvas.addEventListener('pointercancel',e=>{npointers.delete(e.pointerId);nstart=null;npinch=null});neighborCanvas.addEventListener('wheel',e=>{e.preventDefault();neighborZoom=Math.max(.4,Math.min(3,neighborZoom*(e.deltaY>0?.9:1.1)));if(last)renderNeighbors(last.values)},{passive:false});
+for(const id of ['vacuumBonds','bondStrength','bondThreshold','bondGlow','clusterAttraction','rgbBonding'])$(id).addEventListener('input',()=>{if(last){renderLattice(last.values);renderNeighbors(last.values)}});$('resetview').addEventListener('click',()=>{yaw=-.55;pitch=.48;zoom=1;if(last)renderLattice(last.values)});$('verifyPanels').addEventListener('click',()=>{if(!last){$('panelHealth').textContent='No engine data received yet';return}render(last);let bad=['lattice','neighbors','slicecanvas','evolution','heatmap'].filter(id=>!$(id).width||!$(id).height||panelErrors[id]);$('panelHealth').textContent=bad.length?'Check panels: '+bad.join(', '):'All five canvas panels initialized · '+last.values.length+' native cells';});
+let pollBusy=false;const pollOriginal=poll;poll=async function(){if(pollBusy||document.hidden)return;pollBusy=true;try{await pollOriginal()}finally{pollBusy=false}};setInterval(poll,900);setInterval(()=>{if(typeof last!=='undefined'&&last&&last.separation){const q=last.separation;const el=document.getElementById('separationStatus');if(el)el.textContent='RGB separation · conservative changes '+q.conservative_changed+' · transformative changes '+q.transformative_changed+' · tick '+last.tick;}},1000);let animationFrames=0,lastAnimationDraw=0;function animateDensity(){if(performance.now()-lastAnimationDraw>=50&&!document.hidden&&last&&last.running&&$('densityMotion').checked&&latticePrevious&&performance.now()-latticeBlendStarted<900){try{renderLattice(last.values);lastAnimationDraw=performance.now()}catch(e){$('panelHealth').textContent='Lattice animation: '+e.message} }animationFrames=requestAnimationFrame(animateDensity)}animationFrames=requestAnimationFrame(animateDensity);addEventListener('resize',()=>last&&render(last));poll();
+</script><script>
+(function(){
+const $=id=>document.getElementById(id);let press=null,selected=[];
+const canvas=$('lattice');
+canvas.addEventListener('pointerdown',e=>{press={x:e.clientX,y:e.clientY}},true);
+canvas.addEventListener('pointerup',e=>{
+ if(!press||Math.hypot(e.clientX-press.x,e.clientY-press.y)>9)return;
+ press=null;
+ if(typeof projected==='undefined'||!projected.length||typeof last==='undefined'||!last)return;
+ const r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+ const nearest=projected.reduce((a,p)=>{const d=(p.px-x)**2+(p.py-y)**2;return d<a.d?{d,p}:a},{d:Infinity,p:null});
+ if(nearest.d>324)return;
+ const i=nearest.p.i;selected.push(i);if(selected.length>2)selected=[i];
+ $('pairA').value=selected[0];if(selected.length===2)$('pairB').value=selected[1];
+ $('pairStatus').textContent=selected.length===1?'Selected cell '+i+'; tap a second cell':'Selected cells '+selected.join(' and ');
+});
+async function change(action){
+ const a=Number($('pairA').value),b=Number($('pairB').value),max=typeof last!=='undefined'&&last?last.values.length:0;
+ if(!Number.isInteger(a)||!Number.isInteger(b)||a===b||a<0||b<0||a>=max||b>=max){$('pairStatus').textContent='Choose two different cell indices within the active lattice';return}
+ try{
+ const r=await fetch('/api/pair_bond',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({a,b,action,strength:Number($('pairStrength').value)})});const data=await r.json();if(!r.ok)throw Error(data.error||'Bond request failed');
+ $('pairStatus').textContent=action==='bond'?'Bonded cells '+a+' and '+b+'; hexadecimal output updated':'Restored cells '+a+' and '+b+'; hexadecimal output updated';
+ if(typeof render==='function')render(data);
+ }catch(e){$('pairStatus').textContent=e.message}
+}
+$('bondPair').addEventListener('click',()=>change('bond'));
+$('breakPair').addEventListener('click',()=>change('break'));
+})();
+</script><script>
+(function(){
+ const el=id=>document.getElementById(id);
+ const status=el('nativeBondStatus');
+ async function send(path,body){try{const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const data=await r.json();if(!r.ok)throw Error(data.error||'Request failed');if(typeof render==='function')render(data);return data}catch(e){status.textContent='Error: '+e.message;return null}}
+ function params(){return {enabled:el('nativeBonding').checked,strength:Number(el('nativeBondStrength').value),threshold:Number(el('nativeBondThreshold').value)}}
+ for(const id of ['nativeBonding','nativeBondStrength','nativeBondThreshold'])el(id).addEventListener('change',async()=>{const d=await send('/api/bonding',params());if(d)status.textContent=d.bonding.enabled?'Native bonding active':'Visual-only bonding'});
+ el('applyBondNow').addEventListener('click',async()=>{const d=await send('/api/bonding',{...params(),apply_now:true});if(d)status.textContent='Native RGB bonding changed '+d.bonding.changed_cells+' cells · checksum '+d.checksum});
+ el('applyCellEdit').addEventListener('click',async()=>{const index=Number(el('editCellIndex').value),hex=el('editCellHex').value.trim();if(!Number.isInteger(index)||index<0||!(/^[0-9a-fA-F]{1,6}$/.test(hex))){status.textContent='Enter a valid index and 1–6 hex digits';return}const d=await send('/api/cell',{index,hex});if(d)status.textContent='Cell '+index+' updated · checksum '+d.checksum});
+ const originalFetch=window.fetch.bind(window);
+ // Refresh controls after state polling without altering the existing renderer.
+ setInterval(()=>{if(typeof last!=='undefined'&&last&&last.bonding){const b=last.bonding;if(document.activeElement!==el('nativeBonding'))el('nativeBonding').checked=b.enabled;if(document.activeElement!==el('nativeBondStrength'))el('nativeBondStrength').value=b.strength;if(document.activeElement!==el('nativeBondThreshold'))el('nativeBondThreshold').value=b.threshold;}},1500);
+})();
+</script><script id="renderMode66logic">
+(()=>{
+const base=document.getElementById('lattice');
+const original=document.getElementById('originalLattice66');
+const webgl=document.getElementById('webglLattice66');
+const underlying=document.getElementById('gpuParticles');
+const status=document.getElementById('renderModeStatus66');
+function sync(){
+  // Always keep at least one visible renderer; no invisible lattice state.
+  if(!original.checked&&!webgl.checked){original.checked=true;}
+  base.style.opacity=original.checked?'1':'0';
+  underlying.checked=webgl.checked;
+  underlying.dispatchEvent(new Event('input',{bubbles:true}));
+  if(typeof last!=='undefined'&&last&&typeof renderLattice==='function'){
+    try{renderLattice(last.values)}catch(e){status.textContent='Render error: '+e.message;return;}
+  }
+  if(webgl.checked&&underlying.checked===false){webgl.checked=false;original.checked=true;base.style.opacity='1';status.textContent='WebGL unavailable — original lattice active';return;}
+  status.textContent=original.checked&&webgl.checked?'Both rendering layers active':original.checked?'Original lattice only':'WebGL particles only (touch controls retained)';
+}
+original.addEventListener('change',sync);
+webgl.addEventListener('change',sync);
+// WebGL failures can disable the underlying checkbox; keep the visible UI honest.
+setInterval(()=>{if(webgl.checked&&!underlying.checked){webgl.checked=false;original.checked=true;base.style.opacity='1';status.textContent='WebGL unavailable — original lattice active';}},2000);
+sync();
+})();
+
+// V6.8 persistent network controls; use existing pair selectors.
+(function(){
+ const $n=id=>document.getElementById(id);
+ async function network(action,extra={}){
+  try{const r=await fetch('/api/network',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...extra})});const s=await r.json();if(!r.ok)throw Error(s.error||'Network request failed');if(typeof render==='function')render(s);show(s)}catch(e){$n('networkStatus').textContent='Network error: '+e.message}
+ }
+ function show(s){const n=s.persistent_network;if(!n)return;$n('networkStatus').textContent=`${n.bond_count} persistent bonds · ${n.changed_cells} native cells changed last cycle`;$n('networkOn').checked=n.enabled}
+ const pair=()=>({a:Number($n('pairA').value),b:Number($n('pairB').value),strength:Number($n('pairStrength').value)});
+ $n('networkOn').addEventListener('change',e=>network('enable',{enabled:e.target.checked}));
+ $n('networkAdd').addEventListener('click',()=>network('add',pair()));
+ $n('networkRemove').addEventListener('click',()=>network('remove',pair()));
+ $n('networkClear').addEventListener('click',()=>{if(confirm('Clear all persistent bonds?'))network('clear')});
+ const oldRender=render;render=function(s){oldRender(s);show(s)};
+})();
+</script><aside id="auto-network-info" style="position:relative;margin:12px auto;max-width:1100px;padding:12px;border:1px solid #315c75;border-radius:10px;color:#a6dced;background:#071523;font:13px system-ui">
+<strong>V6.8 Autonomous Bond Discovery</strong> · Six-neighbor RGB similarity · Max 512 persistent bonds · Automatic bounded scanning each cycle. View bond counts in Persistent RGB Bond Network.
+</aside><div id="unifiedDynamics74" style="position:fixed;bottom:8px;right:8px;background:#071827e8;color:#b8ecff;padding:7px 11px;border:1px solid #28748d;border-radius:7px;font:12px monospace;z-index:20;pointer-events:none">V7.4 · Bonding + RGB transport active</div>
+<style id="v75automatic">
+#renderMode66,#fluidControls72,.lattice-zone > .panelbar,#networkPanel,#bondControls,#persistentControls{display:none!important}
+/* Keep the main lattice permanently visible independent of network or GPU status. */
+#lattice{opacity:1!important;visibility:visible!important}
+</style>
+<div id="v75status" role="status" style="padding:8px 12px;border:1px solid #315a70;border-radius:8px;color:#8ef2c3;background:#102736;font:12px monospace;margin:8px 0">V7.5 · native state / WebGL / visualizations synchronized automatically</div>
+<script>
+(function(){
+ const ids=['originalLattice66','webglLattice66','gpuParticles','fluidEnabled72','densityMotion'];
+ for(const id of ids){const el=document.getElementById(id);if(el)el.checked=true;}
+ const el=document.getElementById('v75status');
+ setInterval(()=>{if(typeof last!=='undefined'&&last&&el){el.textContent='V7.5 · SHARED STATE · tick '+last.tick+' · hexadecimal '+last.checksum+' · native dynamics '+(last.unified_dynamics?.changed_cells??'?')+' changed cells';}},1200);
+})();
+</script>
+
+<script id="classicRenderer76">
+/* V8.0: V6.8-inspired Canvas appearance. Rendering only; engine, API, and WebGL untouched. */
+(function(){
+'use strict';
+const c=document.getElementById('classicCanvas76'),status=document.getElementById('classicStatus76');
+if(!c||!status)return;
+let yaw=-.55,pitch=.45,zoom=1,down=null,latest=null,previousValues=null,previousTick=-1;
+let previousEnergy=null,blendStarted=0;
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+function rgb(v){v=Number(v)>>>0;return [(v>>>16)&255,(v>>>8)&255,v&255]}
+function css(v,alpha=1){let [r,g,b]=rgb(v);return `rgba(${r},${g},${b},${clamp(alpha).toFixed(3)})`}
+function draw(s){const t=performance.now();try{return drawMeasured(s)}finally{window.hexV85?.add("classic",performance.now()-t)}}function drawMeasured(s){
+ if(!s||!Array.isArray(s.values)||!s.values.length)return;
+ const vals=s.values,n=Math.round(Math.cbrt(vals.length));if(n<2)return;
+ const box=c.getBoundingClientRect(),w=Math.max(1,Math.round(box.width||400)),h=Math.max(1,Math.round(box.height||320));
+ const dpr=Math.min(window.devicePixelRatio||1,1.5),cw=Math.round(w*dpr),ch=Math.round(h*dpr);
+ if(c.width!==cw||c.height!==ch){c.width=cw;c.height=ch;}
+ const ctx=c.getContext('2d');if(!ctx){status.textContent='Canvas unavailable';return;}
+ ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#071225';ctx.fillRect(0,0,w,h);
+ let energy;
+ try{energy=(typeof latticeEnergy==='function'?latticeEnergy(vals):null)}catch(e){energy=null}
+ if(!energy||energy.length!==vals.length)energy=vals.map(v=>{let [r,g,b]=rgb(v);return (r+g+b)/765});
+ if(previousTick!==s.tick){previousValues=latest&&latest.values?latest.values.slice():null;previousEnergy=latest&&latest.values&&latest.values.length===vals.length?latest.energy:null;blendStarted=performance.now();previousTick=s.tick;}
+ const elapsed=performance.now()-blendStarted,blend=clamp(elapsed/650);
+ const stride=Math.max(1,Math.ceil(n/13));
+ const axis=[...new Set([...Array.from({length:Math.ceil(n/stride)},(_,i)=>Math.min(n-1,i*stride)),n-1])];
+ const pts=[],lookup=new Map(),cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);
+ const scale=Math.min(w,h)*.59/Math.sqrt(3)*zoom;
+ for(const z of axis)for(const y of axis)for(const x of axis){
+  const i=x+n*y+n*n*z,X=(x/(n-1)-.5)*2,Y=(y/(n-1)-.5)*2,Z=(z/(n-1)-.5)*2;
+  const rx=X*cy-Z*sy,rz=X*sy+Z*cy,ry=Y*cp-rz*sp,depth=Y*sp+rz*cp;
+  const e=clamp(previousEnergy&&previousEnergy.length===energy.length?previousEnergy[i]*(1-blend)+energy[i]*blend:energy[i]);
+  const p={i,x,y,z,px:w/2+rx*scale,py:h/2+ry*scale,depth,v:vals[i]>>>0,e};pts.push(p);lookup.set(i,p);
+ }
+ // V6.8-style continuous spatial mesh: geometry is independent of active bonds.
+ ctx.lineCap='round';
+ for(const p of pts){const ix=axis.indexOf(p.x),iy=axis.indexOf(p.y),iz=axis.indexOf(p.z);
+  for(const [xx,yy,zz] of [[axis[ix+1],p.y,p.z],[p.x,axis[iy+1],p.z],[p.x,p.y,axis[iz+1]]]){
+   if(xx===undefined||yy===undefined||zz===undefined)continue;
+   const q=lookup.get(xx+n*yy+n*n*zz);if(!q)continue;
+   const e=(p.e+q.e)*.5;
+   ctx.strokeStyle=css(p.v,.10+.57*e);ctx.lineWidth=.4+1.6*e;
+   ctx.beginPath();ctx.moveTo(p.px,p.py);ctx.lineTo(q.px,q.py);ctx.stroke();
+  }
+ }
+ pts.sort((a,b)=>a.depth-b.depth);
+ const glow=clamp(Number(document.getElementById('gpuGlow')?.value||85)/100);
+ const emphasis=clamp(Number(document.getElementById('densityContrast')?.value||75)/100);
+ for(const p of pts){
+  const e=p.e,radius=(1.1+5.8*Math.pow(e,1.5)) * Math.max(.65,Math.pow(zoom,.4));
+  if(e>.58){ctx.beginPath();ctx.arc(p.px,p.py,(2+8*e)*Math.max(.7,Math.pow(zoom,.3)),0,Math.PI*2);ctx.fillStyle=css(p.v,.035+.17*e);ctx.fill();}
+  if(glow>.02){ctx.shadowColor=css(p.v,.9);ctx.shadowBlur=Math.min(14,(2+9*e)*glow*emphasis);}
+  ctx.beginPath();ctx.arc(p.px,p.py,radius,0,Math.PI*2);ctx.fillStyle=css(p.v,.35+.65*e);ctx.fill();ctx.shadowBlur=0;
+ }
+ latest={values:vals.slice(),energy:Float32Array.from(energy),tick:s.tick,checksum:s.checksum};
+ status.textContent=`V6.8-style Canvas · ${pts.length.toLocaleString()} visible / ${vals.length.toLocaleString()} native cells · tick ${s.tick} · HEX ${s.checksum}`;
+}
+const oldRender=render;
+render=function(s){oldRender(s);try{draw(s)}catch(e){status.textContent='Canvas model error: '+e.message;}};
+function update(){if(typeof last!=='undefined'&&last)draw(last)}
+function bind(id,fn){const el=document.getElementById(id);if(el)el.addEventListener('click',()=>{fn();update()})}
+bind('classicLeft76',()=>yaw-=.2);bind('classicRight76',()=>yaw+=.2);
+bind('classicZoomIn76',()=>zoom=Math.min(2.5,zoom*1.2));bind('classicZoomOut76',()=>zoom=Math.max(.4,zoom/1.2));
+bind('classicReset76',()=>{yaw=-.55;pitch=.45;zoom=1});
+c.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY};c.setPointerCapture(e.pointerId)});
+c.addEventListener('pointermove',e=>{if(!down)return;yaw+=(e.clientX-down.x)*.009;pitch=clamp(pitch+(e.clientY-down.y)*.009,-1.4,1.4);down={x:e.clientX,y:e.clientY};update()});
+c.addEventListener('pointerup',()=>down=null);c.addEventListener('pointercancel',()=>down=null);
+window.addEventListener('resize',update);
+if(typeof last!=='undefined'&&last)draw(last);
+})();
+</script>
+<style>
+.model-tabs77{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.model-tabs77 button{flex:1;min-width:140px;padding:11px;border:1px solid #326982;border-radius:9px;background:#102d40;color:#b6d7eb;font-weight:700}.model-tabs77 button[aria-selected="true"]{background:#14526a;color:#fff;border-color:#65cbe7}.classic-inline77{margin:0 0 12px;padding:12px;background:#091b2c;border:1px solid #31576b;border-radius:10px}.classic-inline77 canvas{width:100%;display:block}.classic-inline77 .controls{display:flex;flex-wrap:wrap;gap:6px}.classic-inline77 .controls button{min-height:40px}#renderMode66{display:none!important}
+body.canvas-mode77 #lattice,body.canvas-mode77 #gpuCanvas{display:none!important}body.webgl-mode77 #classicModel76{display:none!important}
+</style>
+<script id="modelSwitcher77">(function(){
+const a=document.getElementById('tabCanvas77'),b=document.getElementById('tabWebgl77');
+const orig=document.getElementById('originalLattice66'),web=document.getElementById('webglLattice66'),gpu=document.getElementById('gpuParticles');
+function setMode(mode){document.body.classList.toggle('canvas-mode77',mode==='canvas');document.body.classList.toggle('webgl-mode77',mode==='webgl');a.setAttribute('aria-selected',String(mode==='canvas'));b.setAttribute('aria-selected',String(mode==='webgl'));
+// Keep both mathematical data streams active; switch presentation only.
+if(orig&&!orig.checked){orig.checked=true;orig.dispatchEvent(new Event('change'));}if(web&&!web.checked){web.checked=true;web.dispatchEvent(new Event('change'));}if(gpu&&!gpu.checked){gpu.checked=true;gpu.dispatchEvent(new Event('change'));}
+window.dispatchEvent(new Event('resize'));}
+a.addEventListener('click',()=>setMode('canvas'));b.addEventListener('click',()=>setMode('webgl'));setMode('canvas');
+})();</script><style>
+#expToggle{position:fixed;left:12px;top:76px;z-index:10002;background:#087f91;box-shadow:0 3px 16px #0008}
+#expSidebar{position:fixed;left:0;top:0;bottom:0;width:min(340px,90vw);z-index:10003;background:#091b30;border-right:1px solid #3284a5;box-shadow:8px 0 35px #0009;padding:20px;overflow-y:auto;transform:translateX(-105%);transition:transform .22s ease}
+#expSidebar.open{transform:translateX(0)}#expSidebar h2{color:#7ee9f2;margin:0 0 15px}#expSidebar input,#expSidebar select,#expSidebar button{width:100%;margin:5px 0}#expSidebar .expRow{display:flex;gap:6px}#expSidebar .expRow>*{min-width:0}#expSidebar pre{white-space:pre-wrap;overflow-wrap:anywhere;font:12px monospace;background:#061323;padding:10px;border-radius:7px;max-height:210px;overflow:auto}#expSidebar label{font-size:12px;color:#a6c5dc}
+</style>
+<button id="expToggle" type="button">☰ Experiments</button>
+<aside id="expSidebar" aria-label="Mathematical experiment directory"><button id="expClose" type="button">✕ Close directory</button><h2>⬡ Experiment Directory</h2>
+<label>New experiment name</label><input id="expName" placeholder="experiment_1" maxlength="64"><button id="expSave" type="button">Save current state</button>
+<label>Saved experiments</label><select id="expList" size="5" aria-label="Saved experiments"></select><button id="expRefresh" type="button">Refresh directory</button>
+<div class="expRow"><button id="expRestore" type="button">Restore</button><button id="expDetails" type="button">History</button></div>
+<label>Native transformation</label><select id="expOp"><option>xor</option><option>add</option><option>and</option><option>or</option><option>rotate_left</option></select>
+<label>Operand (hex)</label><input id="expOperand" value="0xFF"><div class="expRow"><label>Start<input id="expStart" type="number" min="0" value="0"></label><label>Count<input id="expCount" type="number" min="1" max="4096" value="1"></label></div>
+<button id="expTransform" type="button">Apply & record transformation</button><button id="expReplay" type="button">Replay recorded transformations</button>
+<label>Compare against</label><select id="expCompare"></select><button id="expCompareBtn" type="button">Compare experiments</button>
+<button id="expExport" type="button">Export experiment JSON</button><pre id="expOutput" role="status">Select an experiment. Pause the engine before restoring or transforming.</pre></aside>
+<script>(function(){'use strict';const $=id=>document.getElementById(id),out=$('expOutput');function msg(x){out.textContent=typeof x==='string'?x:JSON.stringify(x,null,2)}async function request(path,body){const r=await fetch(path,body===undefined?{cache:'no-store'}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw Error(d.error||'HTTP '+r.status);return d}async function act(fn){try{await fn()}catch(e){msg('Error: '+e.message)}}function chosen(){const n=$('expList').value;if(!n)throw Error('Select an experiment');return n}async function refresh(){const d=await request('/api/experiments');for(const id of ['expList','expCompare']){$(id).replaceChildren();for(const e of d.experiments){const o=document.createElement('option');o.value=e.name;o.textContent=e.name+' ('+e.actions+' operations)';$(id).append(o)}}msg(d.experiments.length+' saved experiments')} $('expToggle').onclick=()=>{$('expSidebar').classList.toggle('open');act(refresh)};$('expClose').onclick=()=>$('expSidebar').classList.remove('open');$('expRefresh').onclick=()=>act(refresh);
+$('expSave').onclick=()=>act(async()=>{const name=$('expName').value.trim();if(!name)throw Error('Enter an experiment name');await request('/api/save',{});msg(await request('/api/experiments/save',{name}));await refresh()});
+$('expRestore').onclick=()=>act(async()=>{if(!confirm('Restore selected experiment? Current unsaved changes will be replaced. Pause engine first.'))return;msg(await request('/api/experiments/restore',{name:chosen()}))});
+$('expDetails').onclick=()=>act(async()=>msg(await request('/api/experiments/details',{name:chosen()})));
+function operation(){return {operation:$('expOp').value,operand:$('expOperand').value,start:Number($('expStart').value),count:Number($('expCount').value)}}
+$('expTransform').onclick=()=>act(async()=>{const name=chosen(),action=operation();await request('/api/transform',action);msg(await request('/api/experiments/record',{name,action}));await refresh()});
+$('expReplay').onclick=()=>act(async()=>{const name=chosen(),details=await request('/api/experiments/details',{name});if(!confirm('Restore baseline and replay '+details.manifest.actions.length+' transformations?'))return;await request('/api/experiments/restore',{name});for(const action of details.manifest.actions)await request('/api/transform',action);msg('Replayed '+details.manifest.actions.length+' native transformations')});
+$('expCompareBtn').onclick=()=>act(async()=>msg(await request('/api/experiments/compare',{first:chosen(),second:$('expCompare').value})));
+$('expExport').onclick=()=>act(async()=>{const name=chosen();const data=await request('/api/experiments/details',{name});const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name+'_metadata.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);msg('Exported experiment metadata; full state remains in experiments/records/'+name+'/state.json')});
+})();</script></body></html>

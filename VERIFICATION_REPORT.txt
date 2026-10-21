@@ -1,0 +1,15 @@
+HEX STUDIO PRO X V8.1 — VERIFICATION REPORT
+
+Scope: uploaded non-terminal Hex Studio Pro X archive.
+
+Corrections:
+1. Save/load now persists the running flag, preventing unwanted automatic restart after loading a paused state.
+2. Updated legacy smoke test ctypes structure and hex_init signature to match the current 32768-cell native ABI; prevents unsafe memory writes and segfault.
+3. Updated legacy API test to reflect current 512-cell default, and explicitly stop/reset before initial assertions to avoid worker scheduling races.
+
+Verification: run `python3 tests/run_verification.py` from the project root.
+Results: see verification_results.json. Existing native, API, and static dashboard tests pass in this Linux environment.
+
+Limitations: no Android Termux device test; no browser GPU/WebGL rendering or visual equivalence test; no 4h/24h endurance test; no independent mathematical specification validation. Static checks do not prove that both visualizers faithfully render every state transition.
+
+Preserved: existing C mathematical algorithms, RGB transformations, HTML/Canvas/WebGL dashboard and switching logic.

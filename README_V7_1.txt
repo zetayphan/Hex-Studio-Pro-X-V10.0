@@ -1,0 +1,1 @@
+V7.1 uses the V6.8 dashboard lattice and neighbor renderers, with V7 native RGB separation (A conservative, B transformative, C coordinating). Persistent bond network disabled. Run sh start.sh in Termux. The Canvas lattice represents all cells at small dimensions; larger dimensions may be sampled for performance.

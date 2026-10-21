@@ -1,0 +1,3 @@
+Hex Studio Pro X V10.0
+
+Adds bounded native hexadecimal cell transforms (xor, add, and, or, rotate_left), with explicit pause requirement, direct C-engine writes, and dashboard controls. Preserves existing Canvas/WebGL renderers and hidden diagnostics. Includes API integration tests. Termux runtime remains unverified.
